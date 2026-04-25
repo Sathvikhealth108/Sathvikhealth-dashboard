@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SATHVIK HEALTH</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --green:#1a7a4a;--green-light:#e8f5ee;--green-mid:#2ecc71;
+    --gold:#c9a84c;--dark:#0f1c14;--text:#1c2b22;--muted:#6b8a76;
+    --border:#d4e8db;--white:#ffffff;--red:#e74c3c;--card-bg:#f9fdfb;
+    --shadow:0 4px 24px rgba(26,122,74,0.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:#f2f7f4;color:var(--text);min-height:100vh;}
+
+  /* LOGIN */
+  #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f1c14 0%,#1a7a4a 60%,#2ecc71 100%);position:relative;overflow:hidden;}
+  #login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(201,168,76,0.18) 0%,transparent 60%);}
+  .login-card{background:rgba(255,255,255,0.97);border-radius:24px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,0.25);position:relative;z-index:1;}
+  .login-logo{text-align:center;margin-bottom:32px;}
+  .login-logo h1{font-family:'Playfair Display',serif;font-size:28px;color:var(--green);}
+  .login-logo p{font-size:13px;color:var(--muted);margin-top:4px;}
+  .role-tabs{display:flex;gap:8px;margin-bottom:28px;background:var(--green-light);border-radius:12px;padding:4px;}
+  .role-tab{flex:1;padding:10px;border:none;background:transparent;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;color:var(--muted);transition:all 0.2s;}
+  .role-tab.active{background:var(--green);color:white;}
+  .form-group{margin-bottom:18px;}
+  .form-group label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px;}
+  .form-group input,.form-group select{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);background:white;outline:none;transition:border 0.2s;}
+  .form-group input:focus{border-color:var(--green);}
+  .btn-login{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.2s;}
+  .btn-login:hover{background:#155e38;}
+  .login-hint{text-align:center;font-size:12px;color:var(--muted);margin-top:16px;}
+  .login-error{background:#fde8e8;color:#c0392b;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;}
+
+  /* SIDEBAR */
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--dark);z-index:100;display:flex;flex-direction:column;}
+  .sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .sidebar-logo h2{font-family:'Playfair Display',serif;color:white;font-size:18px;}
+  .sidebar-logo span{font-size:11px;color:var(--green-mid);font-weight:500;letter-spacing:1px;text-transform:uppercase;}
+  .sidebar-user-badge{margin:16px 16px 0;background:rgba(46,204,113,0.12);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+  .user-avatar{width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;}
+  .user-info .name{font-size:13px;font-weight:600;color:white;}
+  .user-info .role{font-size:11px;color:var(--green-mid);}
+  .nav-section{padding:16px 0 0;flex:1;overflow-y:auto;}
+  .nav-label{padding:8px 24px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 24px;color:rgba(255,255,255,0.6);font-size:14px;cursor:pointer;transition:all 0.15s;border-left:3px solid transparent;}
+  .nav-item:hover{color:white;background:rgba(255,255,255,0.05);}
+  .nav-item.active{color:var(--green-mid);background:rgba(46,204,113,0.08);border-left-color:var(--green-mid);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .sidebar-footer{padding:16px;border-top:1px solid rgba(255,255,255,0.08);}
+  .btn-logout{width:100%;padding:10px;background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.2);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;}
+
+  /* MAIN */
+  #app{display:none;min-height:100vh;}
+  .main-content{margin-left:240px;padding:32px;min-height:100vh;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .page-header{margin-bottom:28px;}
+  .page-header h1{font-family:'Playfair Display',serif;font-size:28px;color:var(--dark);}
+  .page-header p{color:var(--muted);font-size:14px;margin-top:4px;}
+
+  /* CARDS */
+  .card{background:white;border-radius:16px;padding:24px;box-shadow:var(--shadow);}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+  .stat-card{background:white;border-radius:16px;padding:20px 24px;box-shadow:var(--shadow);border-left:4px solid var(--green);position:relative;overflow:hidden;}
+  .stat-card .label{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.8px;}
+  .stat-card .value{font-family:'Playfair Display',serif;font-size:32px;color:var(--dark);margin:6px 0 2px;}
+  .stat-card .sub{font-size:12px;color:var(--green);}
+  .stat-card .bg-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:40px;opacity:0.08;}
+
+  /* TABLES */
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);}
+  tbody td{padding:14px 16px;border-bottom:1px solid #f0f7f3;color:var(--text);}
+  tbody tr:hover{background:var(--green-light);}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-active{background:#d4f4e2;color:#1a7a4a;}
+  .badge-expired{background:#fde8e8;color:#c0392b;}
+  .badge-paid{background:#d4f4e2;color:#1a7a4a;}
+  .badge-pending{background:#fef3cd;color:#856404;}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;}
+  .btn-primary{background:var(--green);color:white;}
+  .btn-primary:hover{background:#155e38;}
+  .btn-secondary{background:var(--green-light);color:var(--green);}
+  .btn-gold{background:var(--gold);color:white;}
+  .btn-whatsapp{background:#25D366;color:white;}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  /* FORMS */
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .form-row.three{grid-template-columns:1fr 1fr 1fr;}
+  .form-row.full{grid-template-columns:1fr;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+  .field input,.field select,.field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:white;outline:none;transition:border 0.2s;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);}
+  .field textarea{min-height:80px;resize:vertical;}
+  .form-actions{display:flex;gap:10px;margin-top:20px;}
+
+  /* MODALS */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:white;border-radius:20px;padding:32px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.2);}
+  .modal h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--dark);margin-bottom:24px;}
+  .modal-close{float:right;cursor:pointer;font-size:20px;color:var(--muted);line-height:1;}
+
+  /* CLIENT PORTAL */
+  .metric-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+  .metric-card{background:white;border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);text-align:center;}
+  .metric-card .m-icon{font-size:28px;margin-bottom:8px;}
+  .metric-card .m-val{font-family:'Playfair Display',serif;font-size:26px;color:var(--dark);}
+  .metric-card .m-label{font-size:12px;color:var(--muted);margin-top:2px;}
+  .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--card-bg);}
+  .upload-zone:hover{border-color:var(--green);background:var(--green-light);}
+  .file-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--green-light);border-radius:8px;font-size:12px;color:var(--green);margin:4px;font-weight:500;}
+  .meal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .meal-slot{border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .meal-slot:hover{border-color:var(--green);background:var(--green-light);}
+  .meal-slot .slot-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;}
+  .meal-slot img{width:100%;border-radius:8px;max-height:80px;object-fit:cover;}
+  .habit-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+  .habit-toggle{display:flex;gap:4px;}
+  .habit-day{width:28px;height:28px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;font-weight:600;color:var(--muted);transition:all 0.15s;}
+  .habit-day.done{background:var(--green);color:white;}
+  .expiry-banner{background:linear-gradient(135deg,#1a7a4a,#2ecc71);border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;color:white;}
+  .expiry-banner .days-left{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;}
+  .progress-bar{background:var(--border);border-radius:10px;height:8px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--green),var(--green-mid));transition:width 0.4s;}
+  .reminder-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;background:var(--card-bg);border:1px solid var(--border);margin-bottom:10px;}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .section-header h3{font-size:16px;font-weight:600;color:var(--dark);}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+
+  /* ===== CLIENT DETAIL DRAWER (NEW) ===== */
+  .client-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:900;backdrop-filter:blur(2px);}
+  .client-drawer-overlay.open{display:block;}
+  .client-drawer{position:fixed;right:0;top:0;bottom:0;width:700px;max-width:95vw;background:white;z-index:901;display:flex;flex-direction:column;box-shadow:-8px 0 48px rgba(0,0,0,0.18);transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);}
+  .client-drawer.open{transform:translateX(0);}
+  .drawer-header{padding:24px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-shrink:0;}
+  .drawer-header-info{flex:1;}
+  .drawer-header-info h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--dark);}
+  .drawer-header-info p{font-size:13px;color:var(--muted);margin-top:2px;}
+  .drawer-close{width:36px;height:36px;border-radius:8px;background:var(--green-light);border:none;cursor:pointer;font-size:18px;color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+  /* DRAWER TABS */
+  .drawer-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+  .drawer-tab{padding:14px 20px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.15s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+  .drawer-tab:hover{color:var(--green);background:var(--green-light);}
+  .drawer-tab.active{color:var(--green);border-bottom-color:var(--green);background:var(--green-light);}
+
+  /* DRAWER BODY */
+  .drawer-body{flex:1;overflow-y:auto;padding:24px 28px;}
+  .drawer-tab-panel{display:none;}
+  .drawer-tab-panel.active{display:block;}
+
+  /* DRAWER STATS ROW */
+  .drawer-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+  .drawer-stat{background:var(--green-light);border-radius:12px;padding:12px 14px;text-align:center;}
+  .drawer-stat .ds-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+  .drawer-stat .ds-val{font-family:'Playfair Display',serif;font-size:20px;color:var(--dark);margin-top:2px;}
+
+  /* GUT HEALTH DISPLAY */
+  .gut-score-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .gut-score-label{font-size:13px;font-weight:500;color:var(--text);width:200px;flex-shrink:0;}
+  .gut-score-bar{flex:1;background:var(--border);border-radius:6px;height:10px;overflow:hidden;}
+  .gut-score-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green),var(--green-mid));}
+  .gut-score-num{font-size:13px;font-weight:700;color:var(--green);width:20px;text-align:right;}
+
+  /* HABIT DISPLAY */
+  .habit-display-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .habit-display-name{font-size:13px;flex:1;}
+  .habit-display-days{display:flex;gap:3px;}
+  .habit-pip{width:22px;height:22px;border-radius:5px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:white;}
+  .habit-pip.done{background:var(--green);}
+  .habit-pip.miss{background:var(--border);color:var(--muted);}
+
+  /* WEIGHT CHART */
+  .weight-chart-wrap{position:relative;height:200px;margin-bottom:16px;}
+
+  /* MEAL DISPLAY */
+  .meal-display-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .meal-display-slot{border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+  .meal-display-slot img{width:100%;height:90px;object-fit:cover;display:block;}
+  .meal-display-slot .meal-slot-name{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;padding:6px 8px;background:var(--card-bg);}
+  .meal-display-slot.empty{background:var(--card-bg);min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
+  .meal-display-slot.empty .meal-slot-name{color:var(--muted);}
+
+  /* REPORTS DISPLAY */
+  .report-chip{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+  .report-chip .r-icon{font-size:20px;}
+  .report-chip .r-name{font-size:13px;font-weight:500;flex:1;}
+  .report-chip .r-date{font-size:11px;color:var(--muted);}
+
+  /* LOADING SKELETON */
+  .skeleton{background:linear-gradient(90deg,#f0f7f3 25%,#e8f5ee 50%,#f0f7f3 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;height:16px;margin-bottom:10px;}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  /* CLICKABLE ROW */
+  .client-row-clickable{cursor:pointer;transition:background 0.15s;}
+  .client-row-clickable:hover{background:var(--green-light)!important;}
+  .client-row-clickable td:first-child{position:relative;}
+  .click-hint{font-size:10px;color:var(--green);font-weight:600;margin-top:2px;}
+
+  /* LOADING */
+  .loading-overlay{position:fixed;inset:0;background:rgba(15,28,20,0.85);z-index:2000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+  .spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--green-mid);border-radius:50%;animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-overlay p{color:white;font-size:14px;}
+
+  /* LOCKED */
+  .locked-overlay{display:none;position:fixed;inset:0;background:rgba(15,28,20,0.96);z-index:500;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:white;}
+  .locked-overlay.show{display:flex;}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:28px;right:28px;background:var(--dark);color:white;padding:14px 20px;border-radius:12px;font-size:14px;z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.3s;border-left:4px solid var(--green-mid);}
+  #toast.show{transform:translateY(0);opacity:1;}
+
+  /* DRAWER LOADING */
+  .drawer-loading{text-align:center;padding:40px 20px;color:var(--muted);}
+  .drawer-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+
+  @media(max-width:900px){
+    .sidebar{width:60px;}
+    .sidebar-logo h2,.sidebar-logo span,.sidebar-user-badge .user-info,.nav-item span,.nav-label{display:none;}
+    .nav-item{padding:14px;justify-content:center;}
+    .sidebar-user-badge{justify-content:center;padding:10px;}
+    .main-content{margin-left:60px;padding:20px 14px;}
+    .stats-grid{grid-template-columns:1fr 1fr;}
+    .metric-cards{grid-template-columns:1fr 1fr;}
+    .two-col,.form-row{grid-template-columns:1fr;}
+    .client-drawer{width:100vw;}
+    .drawer-stats{grid-template-columns:1fr 1fr;}
+    .meal-display-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<script>
+  const SUPABASE_URL = 'https://ifkoshfllpobtwdfshfv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlma29zaGZsbHBvYnR3ZGZzaGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5Mzc4NzUsImV4cCI6MjA5MjUxMzg3NX0.c9ZP4N7XkUJaUYFj1wEIHymF0UhZF4owtCl7B9QJ4RE';
+</script>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div style="font-size:36px">🌿</div>
+      <h1>Sathvik Health</h1>
+      <p>Holistic Nutrition & Wellness</p>
+    </div>
+    <div id="login-error" class="login-error"></div>
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="setRole('admin')">🔑 Admin (You)</button>
+      <button class="role-tab" onclick="setRole('client')">👤 Client Portal</button>
+    </div>
+    <div id="admin-fields">
+      <div class="form-group"><label>Username</label><input id="admin-user" type="text" placeholder="sathvik"/></div>
+      <div class="form-group"><label>Password</label><input id="admin-pass" type="password" placeholder="••••••••"/></div>
+    </div>
+    <div id="client-fields" style="display:none">
+      <div class="form-group"><label>Client Access Key</label><input id="client-key" type="text" placeholder="e.g. SH-ABCD1234"/></div>
+    </div>
+    <button class="btn-login" onclick="doLogin()" id="login-btn">Enter Dashboard →</button>
+    <p class="login-hint" id="login-hint">Admin login: sathvik / health2024</p>
+  </div>
+</div>
+
+<!-- LOCKED -->
+<div class="locked-overlay" id="locked-overlay">
+  <div style="font-size:64px;margin-bottom:16px">🔒</div>
+  <h2 style="font-family:'Playfair Display',serif;font-size:28px;margin-bottom:8px">Plan Expired</h2>
+  <p style="color:rgba(255,255,255,0.6);max-width:320px">Your plan period has ended. Please contact Sathvik Health to renew.</p>
+  <br>
+  <a href="https://wa.me/" style="color:#2ecc71;font-size:14px">📲 Contact on WhatsApp</a>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <h2>🌿 Sathvik Health</h2>
+      <span id="role-label">Admin</span>
+    </div>
+    <div class="sidebar-user-badge">
+      <div class="user-avatar" id="user-avatar">S</div>
+      <div class="user-info">
+        <div class="name" id="user-name">Sathvik</div>
+        <div class="role" id="user-role-display">Nutritionist</div>
+      </div>
+    </div>
+    <div class="nav-section" id="nav-items"></div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="main-content" id="main-content"></div>
+</div>
+
+<!-- CLIENT DETAIL DRAWER (NEW) -->
+<div class="client-drawer-overlay" id="drawer-overlay" onclick="closeClientDrawer()"></div>
+<div class="client-drawer" id="client-drawer">
+  <div class="drawer-header">
+    <div class="user-avatar" id="drawer-avatar" style="width:44px;height:44px;font-size:18px">?</div>
+    <div class="drawer-header-info">
+      <h2 id="drawer-client-name">Client</h2>
+      <p id="drawer-client-meta">Loading...</p>
+    </div>
+    <button class="btn btn-gold btn-sm" id="drawer-share-btn" onclick="">📲 Share Key</button>
+    <button class="drawer-close" onclick="closeClientDrawer()">✕</button>
+  </div>
+  <div class="drawer-tabs">
+    <button class="drawer-tab active" onclick="switchDrawerTab('overview')">📋 Overview</button>
+    <button class="drawer-tab" onclick="switchDrawerTab('weight')">📈 Weight</button>
+    <button class="drawer-tab" onclick="switchDrawerTab('meals')">🍽️ Meals</button>
+    <button class="drawer-tab" onclick="switchDrawerTab('habits')">✅ Habits</button>
+    <button class="drawer-tab" onclick="switchDrawerTab('gut')">🫁 Gut Health</button>
+    <button class="drawer-tab" onclick="switchDrawerTab('reports')">📄 Reports</button>
+  </div>
+  <div class="drawer-body" id="drawer-body">
+    <div class="drawer-loading"><div class="drawer-spinner"></div><p>Loading client data...</p></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-add-client">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal('modal-add-client')">✕</span>
+    <h2>➕ Add New Client</h2>
+    <div class="form-row">
+      <div class="field"><label>Full Name</label><input id="c-name" type="text" placeholder="Priya Sharma"/></div>
+      <div class="field"><label>Phone</label><input id="c-phone" type="tel" placeholder="+91 98765 43210"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Email</label><input id="c-email" type="email" placeholder="priya@email.com"/></div>
+      <div class="field"><label>Age</label><input id="c-age" type="number" placeholder="28"/></div>
+    </div>
+    <div class="form-row three">
+      <div class="field"><label>Goal</label>
+        <select id="c-goal"><option>Weight Loss</option><option>Weight Gain</option><option>Maintenance</option><option>Gut Health</option><option>Diabetes Management</option><option>PCOD/PCOS</option><option>Athletic Performance</option></select>
+      </div>
+      <div class="field"><label>Plan Start</label><input id="c-start" type="date"/></div>
+      <div class="field"><label>Plan End</label><input id="c-end" type="date"/></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Weight (kg)</label><input id="c-weight" type="number" placeholder="65"/></div>
+      <div class="field"><label>Height (cm)</label><input id="c-height" type="number" placeholder="162"/></div>
+    </div>
+    <div class="form-row full">
+      <div class="field"><label>Medical Notes</label><textarea id="c-medical" placeholder="Allergies, conditions, medications..."></textarea></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Monthly Fee (₹)</label><input id="c-fee" type="number" placeholder="2500"/></div>
+      <div class="field"><label>Payment Status</label>
+        <select id="c-payment"><option>Paid</option><option>Pending</option><option>Partial</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="save-client-btn" onclick="addClient()">✅ Add Client</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-client')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-reminder">
+  <div class="modal" style="max-width:440px">
+    <span class="modal-close" onclick="closeModal('modal-add-reminder')">✕</span>
+    <h2>🔔 Add Reminder</h2>
+    <div class="form-row full"><div class="field"><label>Note</label><input id="r-note" type="text" placeholder="Call Priya for weekly check-in"/></div></div>
+    <div class="form-row">
+      <div class="field"><label>Date</label><input id="r-date" type="date"/></div>
+      <div class="field"><label>Time</label><input id="r-time" type="time"/></div>
+    </div>
+    <div class="form-row full"><div class="field"><label>Type</label>
+      <select id="r-type"><option>📞 Call</option><option>💬 WhatsApp Message</option><option>📧 Email</option><option>📋 Follow-up</option><option>💊 Check Supplements</option></select>
+    </div></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="addReminder()">Add Reminder</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-reminder')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-share-key">
+  <div class="modal" style="max-width:480px">
+    <span class="modal-close" onclick="closeModal('modal-share-key')">✕</span>
+    <h2>📲 Share Client Access Key</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:20px">Share this key with your client to access their portal.</p>
+    <div style="background:var(--green-light);border-radius:12px;padding:20px;text-align:center;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Access Key</div>
+      <div id="share-key-display" style="font-family:monospace;font-size:26px;font-weight:700;color:var(--green);letter-spacing:3px"></div>
+      <div id="share-validity" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-whatsapp" style="flex:1" onclick="copyWhatsAppMsg()">📲 Copy WhatsApp Message</button>
+      <button class="btn btn-secondary" onclick="copyKey()">📋 Copy Key</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// SUPABASE INIT
+// =============================================
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// =============================================
+// STATE
+// =============================================
+let currentRole = 'admin';
+let currentClientObj = null;
+let activeShareClient = null;
+let clientsCache = [];
+let remindersCache = [];
+let drawerClientData = null; // currently open client in drawer
+let weightChartInstance = null;
+
+// =============================================
+// SUPABASE HELPERS
+// =============================================
+async function dbGetClients() {
+  const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data || [];
+}
+
+async function dbGetReminders() {
+  const { data, error } = await db.from('reminders').select('*').order('date', { ascending: true });
+  if (error) { console.error(error); return []; }
+  return data || [];
+}
+
+async function dbGetWeightHistory(clientId) {
+  const { data, error } = await db.from('weight_history').select('*').eq('client_id', clientId).order('date', { ascending: true });
+  if (error) return [];
+  return data || [];
+}
+
+async function dbInsertClient(client) {
+  const { data, error } = await db.from('clients').insert([client]).select();
+  if (error) throw error;
+  return data[0];
+}
+
+async function dbInsertReminder(reminder) {
+  const { data, error } = await db.from('reminders').insert([reminder]).select();
+  if (error) throw error;
+  return data[0];
+}
+
+async function dbUpdateReminder(id, updates) {
+  const { error } = await db.from('reminders').update(updates).eq('id', id);
+  if (error) throw error;
+}
+
+async function dbInsertWeight(entry) {
+  const { error } = await db.from('weight_history').insert([entry]);
+  if (error) throw error;
+}
+
+async function dbUpdateClient(id, updates) {
+  const { error } = await db.from('clients').update(updates).eq('id', id);
+  if (error) throw error;
+}
+
+async function dbGetClientPortal(clientId) {
+  const { data } = await db.from('client_portal').select('*').eq('client_id', clientId).single();
+  return data;
+}
+
+async function dbUpsertClientPortal(clientId, portalData) {
+  const { error } = await db.from('client_portal').upsert({ client_id: clientId, ...portalData }, { onConflict: 'client_id' });
+  if (error) console.error(error);
+}
+
+// =============================================
+// LOGIN
+// =============================================
+function setRole(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&role==='admin')||(i===1&&role==='client')));
+  document.getElementById('admin-fields').style.display = role==='admin'?'':'none';
+  document.getElementById('client-fields').style.display = role==='client'?'':'none';
+  document.getElementById('login-hint').textContent = role==='admin'?'Admin: sathvik / health2024':'Enter key given by Sathvik';
+  document.getElementById('login-error').style.display='none';
+}
+
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Logging in...';
+  document.getElementById('login-error').style.display='none';
+  try {
+    if (currentRole === 'admin') {
+      const u = document.getElementById('admin-user').value.trim();
+      const p = document.getElementById('admin-pass').value.trim();
+      if (u === 'sathvik' && p === 'health2024') {
+        await launchAdmin();
+      } else {
+        showLoginError('Invalid username or password');
+      }
+    } else {
+      const key = document.getElementById('client-key').value.trim().toUpperCase();
+      const { data, error } = await db.from('clients').select('*').eq('access_key', key).single();
+      if (error || !data) { showLoginError('Invalid access key. Please check with Sathvik.'); return; }
+      const now = new Date(); const end = new Date(data.end_date);
+      if (end < now) { document.getElementById('locked-overlay').classList.add('show'); return; }
+      currentClientObj = data;
+      await launchClient(data);
+    }
+  } catch(e) {
+    showLoginError('Connection error. Check your internet and try again.');
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enter Dashboard →';
+  }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function logout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('locked-overlay').classList.remove('show');
+  document.getElementById('admin-user').value='';
+  document.getElementById('admin-pass').value='';
+  document.getElementById('client-key').value='';
+  closeClientDrawer();
+}
+
+// =============================================
+// ADMIN
+// =============================================
+async function launchAdmin() {
+  showLoading('Loading your dashboard...');
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('role-label').textContent = 'Admin';
+  document.getElementById('user-name').textContent = 'Sathvik';
+  document.getElementById('user-role-display').textContent = 'Nutritionist';
+  document.getElementById('user-avatar').textContent = 'S';
+
+  clientsCache = await dbGetClients();
+  remindersCache = await dbGetReminders();
+
+  const navItems = [
+    {id:'dashboard',icon:'📊',label:'Dashboard'},
+    {id:'clients',icon:'👥',label:'Clients'},
+    {id:'payments',icon:'💰',label:'Payments'},
+    {id:'reminders',icon:'🔔',label:'Reminders'},
+  ];
+  renderNav(navItems, 'dashboard');
+  renderAdminPages();
+  hideLoading();
+}
+
+function renderNav(items, defaultActive) {
+  const nav = document.getElementById('nav-items');
+  nav.innerHTML = '<div class="nav-label">Navigation</div>' + items.map(i=>`
+    <div class="nav-item" id="nav-${i.id}" onclick="navTo('${i.id}')">
+      <span class="icon">${i.icon}</span><span>${i.label}</span>
+    </div>`).join('');
+  navTo(defaultActive);
+}
+
+function navTo(id) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el = document.getElementById('nav-'+id); if(el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const page = document.getElementById('page-'+id); if(page) page.classList.add('active');
+}
+
+function renderAdminPages() {
+  const clients = clientsCache;
+  const reminders = remindersCache;
+  const activeClients = clients.filter(c=>new Date(c.end_date)>=new Date()).length;
+  const totalRevenue = clients.filter(c=>c.payment==='Paid').reduce((a,c)=>a+(c.fee||0),0);
+  const pendingCount = clients.filter(c=>c.payment==='Pending').length;
+  const upcomingReminders = reminders.filter(r=>!r.done);
+
+  document.getElementById('main-content').innerHTML = `
+    <div id="page-dashboard" class="page active">
+      <div class="page-header"><h1>Good morning, Sathvik 🌿</h1><p>Here's your practice overview</p></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">Active Clients</div><div class="value">${activeClients}</div><div class="sub">Currently active</div><div class="bg-icon">👥</div></div>
+        <div class="stat-card" style="border-color:#c9a84c"><div class="label">Revenue This Month</div><div class="value">₹${totalRevenue.toLocaleString()}</div><div class="sub">Collected</div><div class="bg-icon">💰</div></div>
+        <div class="stat-card" style="border-color:#e74c3c"><div class="label">Pending Payments</div><div class="value">${pendingCount}</div><div class="sub">Need follow-up</div><div class="bg-icon">⏳</div></div>
+        <div class="stat-card" style="border-color:#2980b9"><div class="label">Reminders</div><div class="value">${upcomingReminders.length}</div><div class="sub">Upcoming</div><div class="bg-icon">🔔</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="section-header"><h3>🔔 Upcoming Reminders</h3><button class="btn btn-secondary btn-sm" onclick="navTo('reminders')">See All</button></div>
+          ${upcomingReminders.slice(0,3).map(r=>`
+            <div class="reminder-item">
+              <div style="width:10px;height:10px;border-radius:50%;background:var(--green-mid);flex-shrink:0"></div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:500">${r.note}</div><div style="font-size:12px;color:var(--muted)">${r.type} · ${r.date} ${r.time||''}</div></div>
+              <button class="btn btn-secondary btn-sm" onclick="markReminderDone('${r.id}')">✓</button>
+            </div>`).join('')||'<p style="color:var(--muted);font-size:14px">No upcoming reminders</p>'}
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>👥 Recent Clients</h3><button class="btn btn-secondary btn-sm" onclick="navTo('clients')">See All</button></div>
+          ${clients.slice(0,3).map(c=>`
+            <div class="reminder-item" style="cursor:pointer" onclick="openClientDrawer('${c.id}')">
+              <div class="user-avatar" style="background:var(--green);font-size:13px">${c.name.charAt(0)}</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:500">${c.name}</div><div style="font-size:12px;color:var(--muted)">${c.goal} · Ends ${c.end_date}</div></div>
+              <span class="badge ${new Date(c.end_date)>=new Date()?'badge-active':'badge-expired'}">${new Date(c.end_date)>=new Date()?'Active':'Expired'}</span>
+            </div>`).join('')||'<p style="color:var(--muted);font-size:14px">No clients yet</p>'}
+        </div>
+      </div>
+    </div>
+
+    <div id="page-clients" class="page">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><h1>Clients 👥</h1><p>Click any client row to view their full health data</p></div>
+          <button class="btn btn-primary" onclick="openModal('modal-add-client')">➕ Add Client</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Client</th><th>Goal</th><th>Plan Period</th><th>BMI</th><th>Fee</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="clients-tbody">
+              ${clients.map(c=>`
+                <tr class="client-row-clickable" onclick="openClientDrawer('${c.id}')">
+                  <td>
+                    <strong>${c.name}</strong>
+                    <br><span style="font-size:12px;color:var(--muted)">${c.phone||''}</span>
+                    <div class="click-hint">👁 Click to view health data</div>
+                  </td>
+                  <td>${c.goal||'-'}</td>
+                  <td style="font-size:13px">${c.start_date||''} → ${c.end_date||''}</td>
+                  <td>${c.bmi||'-'}</td>
+                  <td>₹${(c.fee||0).toLocaleString()}</td>
+                  <td><span class="badge badge-${(c.payment||'pending').toLowerCase()}">${c.payment||'Pending'}</span></td>
+                  <td><span class="badge ${new Date(c.end_date)>=new Date()?'badge-active':'badge-expired'}">${new Date(c.end_date)>=new Date()?'Active':'Expired'}</span></td>
+                  <td onclick="event.stopPropagation()" style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-secondary btn-sm" onclick="openClientDrawer('${c.id}')">👁 View</button>
+                    <button class="btn btn-gold btn-sm" onclick="openShareKey('${c.id}')">📲 Key</button>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-payments" class="page">
+      <div class="page-header"><h1>Payments 💰</h1><p>Track fees and dues</p></div>
+      <div class="stats-grid" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="stat-card"><div class="label">Collected</div><div class="value">₹${totalRevenue.toLocaleString()}</div><div class="bg-icon">✅</div></div>
+        <div class="stat-card" style="border-color:#e74c3c"><div class="label">Pending</div><div class="value">₹${clients.filter(c=>c.payment==='Pending').reduce((a,c)=>a+(c.fee||0),0).toLocaleString()}</div><div class="bg-icon">⏳</div></div>
+        <div class="stat-card" style="border-color:#c9a84c"><div class="label">Total</div><div class="value">₹${clients.reduce((a,c)=>a+(c.fee||0),0).toLocaleString()}</div><div class="bg-icon">💰</div></div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Client</th><th>Fee/Month</th><th>Plan End</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>${clients.map(c=>`
+              <tr>
+                <td>${c.name}</td>
+                <td>₹${(c.fee||0).toLocaleString()}</td>
+                <td>${c.end_date||'-'}</td>
+                <td><span class="badge badge-${(c.payment||'pending').toLowerCase()}">${c.payment||'Pending'}</span></td>
+                <td>${c.payment==='Pending'?`<button class="btn btn-secondary btn-sm" onclick="markClientPaid('${c.id}')">Mark Paid</button>`:'—'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-reminders" class="page">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><h1>Reminders 🔔</h1><p>Calls, messages, follow-ups</p></div>
+          <button class="btn btn-primary" onclick="openModal('modal-add-reminder')">➕ Add</button>
+        </div>
+      </div>
+      <div class="card" id="reminders-list"></div>
+    </div>
+  `;
+  renderRemindersList();
+}
+
+// =============================================
+// CLIENT DETAIL DRAWER — NEW FEATURE
+// =============================================
+async function openClientDrawer(clientId) {
+  const c = clientsCache.find(x => x.id === clientId);
+  if (!c) return;
+
+  drawerClientData = { client: c, portal: null, weightHistory: [] };
+
+  // Set header info
+  document.getElementById('drawer-avatar').textContent = c.name.charAt(0);
+  document.getElementById('drawer-client-name').textContent = c.name;
+  document.getElementById('drawer-client-meta').textContent = `${c.phone||''} · ${c.goal||''} · ${c.email||''}`;
+  document.getElementById('drawer-share-btn').onclick = () => openShareKey(c.id);
+
+  // Reset to overview tab
+  switchDrawerTab('overview');
+
+  // Show drawer
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('client-drawer').classList.add('open');
+
+  // Show loading in body
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-loading">
+      <div class="drawer-spinner"></div>
+      <p style="color:var(--muted);font-size:14px;margin-top:4px">Fetching client data from Supabase...</p>
+    </div>`;
+
+  // Fetch all data in parallel
+  try {
+    const [weightHistory, portalData] = await Promise.all([
+      dbGetWeightHistory(clientId),
+      dbGetClientPortal(clientId)
+    ]);
+
+    drawerClientData.weightHistory = weightHistory || [];
+    drawerClientData.portal = portalData || { habits:[], gut:{}, meals:{}, reports:[] };
+
+    renderDrawerOverview();
+  } catch(e) {
+    document.getElementById('drawer-body').innerHTML = `
+      <div style="text-align:center;padding:40px;color:var(--red)">
+        <div style="font-size:32px">❌</div>
+        <p style="margin-top:8px">Error loading data. Please try again.</p>
+      </div>`;
+    console.error(e);
+  }
+}
+
+function closeClientDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('client-drawer').classList.remove('open');
+  drawerClientData = null;
+  if (weightChartInstance) { weightChartInstance.destroy(); weightChartInstance = null; }
+}
+
+function switchDrawerTab(tab) {
+  // Update tab button styles
+  document.querySelectorAll('.drawer-tab').forEach(t => t.classList.remove('active'));
+  const tabs = ['overview','weight','meals','habits','gut','reports'];
+  const idx = tabs.indexOf(tab);
+  const tabBtns = document.querySelectorAll('.drawer-tab');
+  if (tabBtns[idx]) tabBtns[idx].classList.add('active');
+
+  // Render appropriate content
+  if (!drawerClientData) return;
+  switch(tab) {
+    case 'overview': renderDrawerOverview(); break;
+    case 'weight':   renderDrawerWeight(); break;
+    case 'meals':    renderDrawerMeals(); break;
+    case 'habits':   renderDrawerHabits(); break;
+    case 'gut':      renderDrawerGut(); break;
+    case 'reports':  renderDrawerReports(); break;
+  }
+}
+
+function renderDrawerOverview() {
+  if (!drawerClientData) return;
+  const { client: c, weightHistory, portal: pd } = drawerClientData;
+  const bmi = c.height ? (c.weight / ((c.height/100)**2)).toFixed(1) : '-';
+  const daysLeft = Math.max(0, Math.ceil((new Date(c.end_date) - new Date()) / (1000*60*60*24)));
+  const pct = c.start_date && c.end_date ? Math.min(100, Math.round(((new Date()-new Date(c.start_date))/(new Date(c.end_date)-new Date(c.start_date)))*100)) : 0;
+  const startW = weightHistory.length > 0 ? weightHistory[0].weight : c.weight;
+  const diff = ((c.weight||0) - (startW||0)).toFixed(1);
+  const habitsScore = pd && pd.habits ? pd.habits.reduce((a,h)=>a+(h.days||[]).reduce((b,d)=>b+d,0),0) : 0;
+  const habitsTotal = pd && pd.habits ? pd.habits.length * 7 : 0;
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-stats">
+      <div class="drawer-stat"><div class="ds-label">Weight</div><div class="ds-val">${c.weight||'-'} kg</div></div>
+      <div class="drawer-stat"><div class="ds-label">BMI</div><div class="ds-val">${bmi}</div></div>
+      <div class="drawer-stat"><div class="ds-label">Days Left</div><div class="ds-val">${daysLeft}</div></div>
+      <div class="drawer-stat"><div class="ds-label">Change</div><div class="ds-val" style="color:${parseFloat(diff)<0?'var(--green)':parseFloat(diff)>0?'var(--red)':'var(--dark)'}">${parseFloat(diff)>0?'+':''}${diff} kg</div></div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px">
+        <span>Plan Progress (${c.start_date} → ${c.end_date})</span><span>${pct}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:8px">👤 Personal</div>
+        <div style="font-size:13px;line-height:2">
+          <div>Age: <strong>${c.age||'-'} yrs</strong></div>
+          <div>Height: <strong>${c.height||'-'} cm</strong></div>
+          <div>Goal: <strong>${c.goal||'-'}</strong></div>
+          <div>Phone: <strong>${c.phone||'-'}</strong></div>
+        </div>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:8px">📊 This Week</div>
+        <div style="font-size:13px;line-height:2">
+          <div>Weight logs: <strong>${weightHistory.slice(-7).length}</strong></div>
+          <div>Habits done: <strong>${habitsScore}/${habitsTotal}</strong></div>
+          <div>Meals logged: <strong>${pd&&pd.meals?Object.keys(pd.meals).length:0}</strong></div>
+          <div>Reports: <strong>${pd&&pd.reports?pd.reports.length:0}</strong></div>
+        </div>
+      </div>
+    </div>
+
+    ${c.medical ? `
+    <div style="background:#fff8e8;border:1px solid #f5e0a0;border-radius:12px;padding:14px;margin-bottom:20px">
+      <div style="font-size:11px;color:#856404;text-transform:uppercase;font-weight:600;margin-bottom:6px">⚠️ Medical Notes</div>
+      <div style="font-size:13px;color:var(--text)">${c.medical}</div>
+    </div>` : ''}
+
+    ${c.notes ? `
+    <div style="background:var(--green-light);border-radius:12px;padding:14px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--green);text-transform:uppercase;font-weight:600;margin-bottom:6px">🌿 Nutritionist Note</div>
+      <div style="font-size:13px;color:var(--text)">${c.notes}</div>
+    </div>` : ''}
+
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:10px">➕ Add Weight Entry</div>
+      <div style="display:flex;gap:10px">
+        <input id="dw-weight" type="number" placeholder="kg" style="width:100px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px">
+        <input id="dw-note" type="text" placeholder="e.g. After morning walk" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px">
+        <button class="btn btn-primary btn-sm" onclick="drawerAddWeight('${c.id}')">Add</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderDrawerWeight() {
+  if (!drawerClientData) return;
+  const { client: c, weightHistory: history } = drawerClientData;
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:14px;font-weight:600;color:var(--dark)">📈 Weight History (${history.length} entries)</div>
+      ${history.length>=2 ? `<div style="font-size:12px;color:var(--muted)">Start: ${history[0].weight}kg → Current: ${history[history.length-1].weight}kg</div>` : ''}
+    </div>
+    <div class="weight-chart-wrap">
+      <canvas id="drawer-weight-chart"></canvas>
+    </div>
+    <div class="table-wrap" style="margin-top:16px">
+      <table>
+        <thead><tr><th>Date</th><th>Weight</th><th>BMI</th><th>Note</th></tr></thead>
+        <tbody>
+          ${history.slice().reverse().map(h=>{
+            const b = c.height ? (h.weight/((c.height/100)**2)).toFixed(1) : '-';
+            return `<tr><td>${h.date}</td><td><strong>${h.weight} kg</strong></td><td>${b}</td><td style="color:var(--muted);font-size:13px">${h.note||''}</td></tr>`;
+          }).join('') || '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:20px">No weight entries yet</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:10px">➕ Add Entry</div>
+      <div style="display:flex;gap:10px">
+        <input id="dw-weight2" type="number" placeholder="kg" style="width:100px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px">
+        <input id="dw-note2" type="text" placeholder="Note (optional)" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px">
+        <button class="btn btn-primary btn-sm" onclick="drawerAddWeight2('${c.id}')">Add</button>
+      </div>
+    </div>
+  `;
+
+  // Render chart
+  if (history.length > 0) {
+    setTimeout(() => {
+      if (weightChartInstance) weightChartInstance.destroy();
+      const ctx = document.getElementById('drawer-weight-chart');
+      if (!ctx) return;
+      weightChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: history.map(h => h.date),
+          datasets: [{
+            label: 'Weight (kg)',
+            data: history.map(h => h.weight),
+            borderColor: '#1a7a4a',
+            backgroundColor: 'rgba(26,122,74,0.08)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#1a7a4a',
+            pointRadius: 4,
+            tension: 0.35,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#f0f7f3' }, ticks: { font: { family: 'DM Sans', size: 11 } } },
+            x: { grid: { display: false }, ticks: { font: { family: 'DM Sans', size: 11 }, maxTicksLimit: 8 } }
+          }
+        }
+      });
+    }, 50);
+  }
+}
+
+function renderDrawerMeals() {
+  if (!drawerClientData) return;
+  const { portal: pd } = drawerClientData;
+  const meals = pd && pd.meals ? pd.meals : {};
+  const slots = ['breakfast','lunch','dinner','snack1','snack2','snack3'];
+  const slotLabels = {'breakfast':'Breakfast','lunch':'Lunch','dinner':'Dinner','snack1':'Snack 1','snack2':'Snack 2','snack3':'Snack 3'};
+
+  const hasAny = slots.some(s => meals[s]);
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:var(--dark)">🍽️ Meal Photos</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">Photos uploaded by your client</div>
+    </div>
+    ${!hasAny ? `<div style="text-align:center;padding:40px 20px;color:var(--muted)"><div style="font-size:36px;margin-bottom:8px">🍽️</div><p>No meal photos uploaded yet</p><p style="font-size:12px;margin-top:4px">Your client hasn't logged any meals</p></div>` : `
+    <div class="meal-display-grid">
+      ${slots.map(slot => {
+        const img = meals[slot];
+        return img
+          ? `<div class="meal-display-slot"><img src="${img}" alt="${slotLabels[slot]}"/><div class="meal-slot-name">${slotLabels[slot]}</div></div>`
+          : `<div class="meal-display-slot empty"><div style="font-size:24px;color:var(--border)">📷</div><div class="meal-slot-name">${slotLabels[slot]}</div></div>`;
+      }).join('')}
+    </div>`}
+  `;
+}
+
+function renderDrawerHabits() {
+  if (!drawerClientData) return;
+  const { portal: pd } = drawerClientData;
+  const habits = pd && pd.habits ? pd.habits : [];
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  const totalDone = habits.reduce((a,h)=>a+(h.days||[]).reduce((b,d)=>b+d,0),0);
+  const totalPossible = habits.length * 7;
+  const pct = totalPossible > 0 ? Math.round((totalDone/totalPossible)*100) : 0;
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px">
+        <span>Weekly Habit Completion</span><span>${totalDone}/${totalPossible} (${pct}%)</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    ${habits.length === 0
+      ? `<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px">✅</div><p style="margin-top:8px">No habits tracked yet</p></div>`
+      : `<div style="margin-bottom:10px;display:flex;justify-content:flex-end;gap:4px">
+          ${days.map(d=>`<div style="width:22px;text-align:center;font-size:10px;font-weight:700;color:var(--muted)">${d.slice(0,1)}</div>`).join('')}
+        </div>
+        ${habits.map(h => `
+          <div class="habit-display-row">
+            <div class="habit-display-name">${h.name}</div>
+            <div class="habit-display-days">
+              ${(h.days||[0,0,0,0,0,0,0]).map((d,i)=>`
+                <div class="habit-pip ${d?'done':'miss'}" title="${days[i]}">${d?'✓':'·'}</div>`).join('')}
+            </div>
+          </div>`).join('')}
+        <div style="margin-top:14px;font-size:12px;color:var(--muted);text-align:right">${totalDone} habits completed this week</div>`}
+  `;
+}
+
+function renderDrawerGut() {
+  if (!drawerClientData) return;
+  const { portal: pd } = drawerClientData;
+  const gut = pd && pd.gut ? pd.gut : {};
+
+  const metrics = [
+    { key: 'bloating', label: '🫧 Bloating Level', desc: '1 = none, 5 = severe', invert: true },
+    { key: 'digestion', label: '🌿 Digestion Quality', desc: '1 = poor, 5 = great', invert: false },
+    { key: 'energy', label: '⚡ Energy Level', desc: '1 = low, 5 = high', invert: false },
+  ];
+
+  function getColor(val, invert) {
+    if (!val) return 'var(--border)';
+    const score = invert ? (6-val) : val;
+    if (score >= 4) return 'var(--green)';
+    if (score >= 3) return '#f0a500';
+    return 'var(--red)';
+  }
+
+  const hasData = metrics.some(m => gut[m.key]);
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div style="margin-bottom:20px">
+      <div style="font-size:14px;font-weight:600;color:var(--dark);margin-bottom:4px">🫁 Gut Health Check</div>
+      <div style="font-size:13px;color:var(--muted)">Scores logged by your client</div>
+    </div>
+    ${!hasData
+      ? `<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px">🫁</div><p style="margin-top:8px">No gut health data logged yet</p></div>`
+      : metrics.map(m => {
+          const val = gut[m.key];
+          const pct = val ? (val/5)*100 : 0;
+          const color = getColor(val, m.invert);
+          return `
+            <div style="margin-bottom:20px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <div>
+                  <div style="font-size:13px;font-weight:600">${m.label}</div>
+                  <div style="font-size:11px;color:var(--muted)">${m.desc}</div>
+                </div>
+                <div style="font-family:'Playfair Display',serif;font-size:24px;color:${color};font-weight:700">${val||'-'}<span style="font-size:13px;color:var(--muted)">/5</span></div>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+            </div>`;
+        }).join('')}
+    ${gut.notes ? `
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:8px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:8px">📝 Client's Gut Notes</div>
+        <div style="font-size:14px;line-height:1.6">${gut.notes}</div>
+      </div>` : ''}
+    <div style="margin-top:20px;background:var(--green-light);border-radius:12px;padding:16px;font-size:13px">
+      <strong>🌿 Quick Reference:</strong><br>
+      • Bloating 4-5 = needs dietary intervention<br>
+      • Digestion below 3 = check fibre & water intake<br>
+      • Energy below 3 = check sleep & meal timing
+    </div>
+  `;
+}
+
+function renderDrawerReports() {
+  if (!drawerClientData) return;
+  const { portal: pd } = drawerClientData;
+  const reports = pd && pd.reports ? pd.reports : [];
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:var(--dark)">📄 Client Reports</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">${reports.length} file(s) uploaded by client</div>
+    </div>
+    ${reports.length === 0
+      ? `<div style="text-align:center;padding:40px;color:var(--muted)">
+          <div style="font-size:36px">📂</div>
+          <p style="margin-top:8px">No reports uploaded yet</p>
+          <p style="font-size:12px;margin-top:4px">Your client can upload blood reports, fitness screenshots, prescriptions</p>
+        </div>`
+      : reports.map((r,i) => {
+          const isPDF = r.toLowerCase().endsWith('.pdf');
+          const icon = isPDF ? '📑' : '🖼️';
+          return `<div class="report-chip">
+            <div class="r-icon">${icon}</div>
+            <div class="r-name">${r}</div>
+            <div class="r-date">Entry #${i+1}</div>
+          </div>`;
+        }).join('')}
+  `;
+}
+
+// =============================================
+// DRAWER — ADD WEIGHT
+// =============================================
+async function drawerAddWeight(clientId) {
+  const w = parseFloat(document.getElementById('dw-weight').value);
+  const note = document.getElementById('dw-note').value;
+  if (!w) { showToast('❌ Enter a weight'); return; }
+  showLoading('Saving...');
+  try {
+    await dbInsertWeight({ client_id: clientId, date: new Date().toISOString().split('T')[0], weight: w, note });
+    const c = clientsCache.find(x=>x.id===clientId);
+    if (c && c.height) {
+      const bmi = parseFloat((w/((c.height/100)**2)).toFixed(1));
+      await dbUpdateClient(clientId, { weight: w, bmi });
+      c.weight = w; c.bmi = bmi;
+    }
+    // Refresh data
+    drawerClientData.weightHistory = await dbGetWeightHistory(clientId);
+    renderDrawerOverview();
+    showToast('✅ Weight saved!');
+  } catch(e) { showToast('❌ Error saving'); }
+  finally { hideLoading(); }
+}
+
+async function drawerAddWeight2(clientId) {
+  const w = parseFloat(document.getElementById('dw-weight2').value);
+  const note = document.getElementById('dw-note2').value;
+  if (!w) { showToast('❌ Enter a weight'); return; }
+  showLoading('Saving...');
+  try {
+    await dbInsertWeight({ client_id: clientId, date: new Date().toISOString().split('T')[0], weight: w, note });
+    const c = clientsCache.find(x=>x.id===clientId);
+    if (c && c.height) {
+      const bmi = parseFloat((w/((c.height/100)**2)).toFixed(1));
+      await dbUpdateClient(clientId, { weight: w, bmi });
+      c.weight = w; c.bmi = bmi;
+    }
+    drawerClientData.weightHistory = await dbGetWeightHistory(clientId);
+    if (weightChartInstance) weightChartInstance.destroy();
+    renderDrawerWeight();
+    showToast('✅ Weight saved!');
+  } catch(e) { showToast('❌ Error saving'); }
+  finally { hideLoading(); }
+}
+
+// =============================================
+// ADMIN HELPERS
+// =============================================
+async function addClient() {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) { showToast('❌ Name is required'); return; }
+  const w = parseFloat(document.getElementById('c-weight').value)||0;
+  const h = parseFloat(document.getElementById('c-height').value)||1;
+  const bmi = parseFloat((w/((h/100)**2)).toFixed(1));
+  const key = 'SH-' + name.slice(0,4).toUpperCase().replace(/[^A-Z]/g,'X') + Math.floor(1000+Math.random()*9000);
+  const btn = document.getElementById('save-client-btn');
+  btn.disabled=true; btn.textContent='Saving...';
+  try {
+    const newClient = await dbInsertClient({
+      name, phone:document.getElementById('c-phone').value,
+      email:document.getElementById('c-email').value,
+      age:parseInt(document.getElementById('c-age').value)||null,
+      goal:document.getElementById('c-goal').value,
+      start_date:document.getElementById('c-start').value||null,
+      end_date:document.getElementById('c-end').value||null,
+      weight:w, height:h, bmi,
+      medical:document.getElementById('c-medical').value,
+      fee:parseInt(document.getElementById('c-fee').value)||0,
+      payment:document.getElementById('c-payment').value,
+      access_key:key, notes:''
+    });
+    clientsCache.unshift(newClient);
+    closeModal('modal-add-client');
+    renderAdminPages(); navTo('clients');
+    showToast('✅ Client added! Key: '+key);
+  } catch(e) {
+    showToast('❌ Error: '+(e.message||'Could not save'));
+  } finally {
+    btn.disabled=false; btn.textContent='✅ Add Client';
+  }
+}
+
+async function addReminder() {
+  const note = document.getElementById('r-note').value.trim();
+  if (!note) { showToast('❌ Note is required'); return; }
+  try {
+    const r = await dbInsertReminder({
+      note, date:document.getElementById('r-date').value,
+      time:document.getElementById('r-time').value,
+      type:document.getElementById('r-type').value, done:false
+    });
+    remindersCache.push(r);
+    closeModal('modal-add-reminder');
+    renderRemindersList();
+    showToast('✅ Reminder added!');
+  } catch(e) { showToast('❌ Error saving reminder'); }
+}
+
+async function markReminderDone(id) {
+  try {
+    await dbUpdateReminder(id, { done:true });
+    const r = remindersCache.find(x=>x.id===id);
+    if(r) r.done=true;
+    renderRemindersList();
+    showToast('✅ Done!');
+  } catch(e) { showToast('❌ Error'); }
+}
+
+async function markClientPaid(id) {
+  try {
+    await dbUpdateClient(id, { payment:'Paid' });
+    const c = clientsCache.find(x=>x.id===id);
+    if(c) c.payment='Paid';
+    renderAdminPages(); navTo('payments');
+    showToast('✅ Marked as paid!');
+  } catch(e) { showToast('❌ Error'); }
+}
+
+function renderRemindersList() {
+  const list = document.getElementById('reminders-list');
+  if (!list) return;
+  const pending = remindersCache.filter(r=>!r.done);
+  const done = remindersCache.filter(r=>r.done);
+  list.innerHTML = `
+    <div style="margin-bottom:8px;font-weight:600;font-size:14px;color:var(--muted)">UPCOMING (${pending.length})</div>
+    ${pending.map(r=>`
+      <div class="reminder-item">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--green-mid);flex-shrink:0"></div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:500">${r.note}</div>
+        <div style="font-size:12px;color:var(--muted)">${r.type} · ${r.date||''} ${r.time||''}</div></div>
+        <button class="btn btn-primary btn-sm" onclick="markReminderDone('${r.id}')">✓ Done</button>
+      </div>`).join('')||'<p style="color:var(--muted);font-size:14px;padding:8px 0">No reminders</p>'}
+    ${done.length>0?`<div style="margin:16px 0 8px;font-weight:600;font-size:14px;color:var(--muted)">DONE</div>${done.map(r=>`
+      <div class="reminder-item" style="opacity:0.4"><del>${r.note}</del></div>`).join('')}`:''}`;
+}
+
+function openShareKey(id) {
+  const c = clientsCache.find(x=>x.id===id);
+  if(!c) return;
+  activeShareClient = c;
+  document.getElementById('share-key-display').textContent = c.access_key;
+  document.getElementById('share-validity').textContent = 'Valid until '+c.end_date;
+  openModal('modal-share-key');
+}
+
+function copyKey() {
+  if(!activeShareClient) return;
+  navigator.clipboard.writeText(activeShareClient.access_key)
+    .then(()=>showToast('📋 Key copied!'))
+    .catch(()=>showToast('Key: '+activeShareClient.access_key));
+}
+
+function copyWhatsAppMsg() {
+  if(!activeShareClient) return;
+  const c = activeShareClient;
+  const url = window.location.href;
+  const msg = `🌿 *Sathvik Health - Your Portal is Ready!*\n\nHi ${c.name}! 👋\n\nYour personalised nutrition portal is now live.\n\n🔗 *Link:* ${url}\n🔑 *Your Key:* ${c.access_key}\n📅 *Valid Until:* ${c.end_date}\n\n*How to login:*\n1. Open the link above\n2. Tap "Client Portal"\n3. Enter your key: *${c.access_key}*\n\nTrack your weight, log meals, upload reports & habits 🥗\n\nFor help, just reply here!\n– Sathvik 🌿`;
+  navigator.clipboard.writeText(msg)
+    .then(()=>showToast('📲 WhatsApp message copied!'))
+    .catch(()=>{ alert(msg); });
+}
+
+// =============================================
+// CLIENT PORTAL
+// =============================================
+async function launchClient(c) {
+  showLoading('Loading your portal...');
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('role-label').textContent='Client';
+  document.getElementById('user-name').textContent=c.name.split(' ')[0];
+  document.getElementById('user-role-display').textContent=c.goal||'Member';
+  document.getElementById('user-avatar').textContent=c.name.charAt(0);
+
+  const history = await dbGetWeightHistory(c.id);
+  const portalData = await dbGetClientPortal(c.id) || {
+    habits:[
+      {name:'💧 Water (8 glasses)',days:[0,0,0,0,0,0,0]},
+      {name:'🚶 Walk 30 mins',days:[0,0,0,0,0,0,0]},
+      {name:'😴 Sleep 7-8 hrs',days:[0,0,0,0,0,0,0]},
+      {name:'🥗 Eat veggies',days:[0,0,0,0,0,0,0]},
+      {name:'🚫 No junk food',days:[0,0,0,0,0,0,0]}
+    ],
+    gut:{bloating:2,digestion:3,energy:3,notes:''},
+    meals:{},
+    reports:[]
+  };
+
+  const navItems=[
+    {id:'cp-home',icon:'🏠',label:'My Dashboard'},
+    {id:'cp-tracking',icon:'📈',label:'Tracking'},
+    {id:'cp-meals',icon:'🍽️',label:'Meal Photos'},
+    {id:'cp-reports',icon:'📄',label:'My Reports'},
+    {id:'cp-habits',icon:'✅',label:'Habits'},
+    {id:'cp-gut',icon:'🫁',label:'Gut Health'},
+  ];
+  renderNav(navItems,'cp-home');
+  renderClientPages(c, history, portalData);
+  hideLoading();
+}
+
+function renderClientPages(c, history, pd) {
+  const daysLeft = Math.max(0,Math.ceil((new Date(c.end_date)-new Date())/(1000*60*60*24)));
+  const bmi = (c.weight/((c.height/100)**2)).toFixed(1);
+  const startW = history.length>0?history[0].weight:c.weight;
+  const diff = ((c.weight||0)-(startW||0)).toFixed(1);
+
+  document.getElementById('main-content').innerHTML = `
+  <div id="page-cp-home" class="page active">
+    <div class="page-header"><h1>Hello, ${c.name.split(' ')[0]}! 🌿</h1><p>Your personal wellness dashboard</p></div>
+    <div class="expiry-banner">
+      <div><div class="days-left">${daysLeft}</div><div style="font-size:12px;opacity:0.85">Days Remaining in Plan</div></div>
+      <div style="text-align:right"><div style="font-size:13px;opacity:0.8">Plan ends</div><div style="font-size:16px;font-weight:600">${c.end_date}</div></div>
+    </div>
+    <div class="metric-cards">
+      <div class="metric-card"><div class="m-icon">⚖️</div><div class="m-val">${c.weight||'-'} kg</div><div class="m-label">Current Weight</div></div>
+      <div class="metric-card"><div class="m-icon">📏</div><div class="m-val">${bmi}</div><div class="m-label">BMI</div></div>
+      <div class="metric-card"><div class="m-icon">🎯</div><div class="m-val">${parseFloat(diff)>0?'+'+diff:diff} kg</div><div class="m-label">Change Since Start</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="section-header"><h3>📈 Recent Weight</h3></div>
+        ${history.slice(-5).map(h=>`
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px">
+            <span style="color:var(--muted)">${h.date}</span><strong>${h.weight} kg</strong>
+            <span style="color:var(--muted);font-size:12px">${h.note||''}</span>
+          </div>`).join('')||'<p style="color:var(--muted);font-size:14px">No entries yet — log below!</p>'}
+        <div style="margin-top:16px">
+          <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;text-transform:uppercase">Log Today's Weight</div>
+          <div style="display:flex;gap:8px">
+            <input id="cw-input" type="number" placeholder="${c.weight||'kg'}" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px">
+            <button class="btn btn-primary btn-sm" onclick="clientLogWeight('${c.id}')">Log</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-header"><h3>🎯 My Goal</h3></div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px">${c.goal||'-'}</div>
+        <div style="background:var(--green-light);border-radius:12px;padding:16px">
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Nutritionist's Note</div>
+          <div style="font-size:14px">${c.notes||"Stay consistent with your meal plan. You're doing great! 💪"}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-cp-tracking" class="page">
+    <div class="page-header"><h1>Tracking 📈</h1><p>Log your daily stats</p></div>
+    <div class="card">
+      <div class="form-row three">
+        <div class="field"><label>Weight (kg)</label><input id="t-weight" type="number" placeholder="${c.weight||''}"/></div>
+        <div class="field"><label>Waist (cm)</label><input id="t-waist" type="number" placeholder="Optional"/></div>
+        <div class="field"><label>Date</label><input id="t-date" type="date" value="${new Date().toISOString().split('T')[0]}"/></div>
+      </div>
+      <div class="form-row full"><div class="field"><label>How you feel today</label><textarea id="t-notes" placeholder="Energy levels, mood, any symptoms..."></textarea></div></div>
+      <div class="form-actions"><button class="btn btn-primary" onclick="clientSaveTracking('${c.id}','${c.height}')">💾 Save Entry</button></div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <h3 style="margin-bottom:16px;font-size:16px">📋 History</h3>
+      <div class="table-wrap">
+        <table><thead><tr><th>Date</th><th>Weight</th><th>BMI</th><th>Note</th></tr></thead>
+        <tbody>${history.slice().reverse().map(h=>{const b=(h.weight/((c.height/100)**2)).toFixed(1);return`<tr><td>${h.date}</td><td>${h.weight} kg</td><td>${b}</td><td style="color:var(--muted)">${h.note||''}</td></tr>`}).join('')||'<tr><td colspan="4" style="color:var(--muted)">No entries yet</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-cp-meals" class="page">
+    <div class="page-header"><h1>Meal Photos 🍽️</h1><p>Snap and log what you eat</p></div>
+    <div class="card">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Tap a slot to add a photo. Your nutritionist reviews these during check-ins.</p>
+      <div class="meal-grid">
+        ${['Breakfast','Lunch','Dinner','Snack 1','Snack 2','Snack 3'].map(slot=>{
+          const key=slot.toLowerCase().replace(' ','');
+          const img=pd.meals&&pd.meals[key];
+          return`<div class="meal-slot" onclick="addMealPhoto('${c.id}','${key}')">
+            ${img?`<img src="${img}"/>`:'<div style="font-size:28px">📷</div>'}
+            <div class="slot-label">${slot}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <input type="file" id="meal-file-input" accept="image/*" style="display:none" onchange="handleMealPhoto(event,'${c.id}')"/>
+    </div>
+  </div>
+
+  <div id="page-cp-reports" class="page">
+    <div class="page-header"><h1>My Reports 📄</h1><p>Upload blood tests, fitness screenshots, prescriptions</p></div>
+    <div class="card">
+      <div class="upload-zone" onclick="document.getElementById('report-upload').click()">
+        <div style="font-size:32px;margin-bottom:8px">📎</div>
+        <p>Tap to upload PDF, image, or screenshot</p>
+        <p style="font-size:12px;margin-top:4px;color:var(--muted)">Blood reports, fitness tracker screenshots, prescriptions</p>
+      </div>
+      <input type="file" id="report-upload" multiple accept=".pdf,image/*" style="display:none" onchange="handleReportUpload(event,'${c.id}')"/>
+      <div id="report-files-list" style="margin-top:12px">
+        ${((pd.reports)||[]).map(r=>`<span class="file-chip">📄 ${r}</span>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div id="page-cp-habits" class="page">
+    <div class="page-header"><h1>Habits ✅</h1><p>Track your daily wellness habits</p></div>
+    <div class="card">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Tap a day to mark done. Mon → Sun</p>
+      ${(pd.habits||[]).map((h,hi)=>`
+        <div class="habit-row">
+          <div style="font-size:14px;font-weight:500;flex:1">${h.name}</div>
+          <div class="habit-toggle">
+            ${['M','T','W','T','F','S','S'].map((d,di)=>`
+              <div class="habit-day${(h.days||[])[di]?' done':''}" onclick="toggleHabit('${c.id}',${hi},${di})">${d}</div>`).join('')}
+          </div>
+        </div>`).join('')}
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)">
+        Weekly score: ${(pd.habits||[]).reduce((a,h)=>a+(h.days||[]).reduce((b,d)=>b+d,0),0)} / ${(pd.habits||[]).length*7} habits completed
+      </div>
+    </div>
+  </div>
+
+  <div id="page-cp-gut" class="page">
+    <div class="page-header"><h1>Gut Health 🫁</h1><p>Track your digestive wellness</p></div>
+    <div class="card">
+      ${[['Bloating Level (1=none, 5=severe)','bloating'],['Digestion Quality (1=poor, 5=great)','digestion'],['Energy Level (1=low, 5=high)','energy']].map(([label,key])=>`
+        <div style="margin-bottom:20px">
+          <label style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase">${label}</label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            ${[1,2,3,4,5].map(v=>`<button onclick="setGut('${c.id}','${key}',${v})" style="width:44px;height:44px;border-radius:10px;border:2px solid ${(pd.gut||{})[key]===v?'var(--green)':'var(--border)'};background:${(pd.gut||{})[key]===v?'var(--green)':'white'};color:${(pd.gut||{})[key]===v?'white':'var(--text)'};font-size:16px;font-weight:700;cursor:pointer">${v}</button>`).join('')}
+          </div>
+        </div>`).join('')}
+      <div class="field"><label>Daily Gut Notes</label><textarea id="gut-notes" placeholder="Bloating after lunch, constipation, reflux..." oninput="saveGutNotes('${c.id}')">${(pd.gut||{}).notes||''}</textarea></div>
+      <div style="margin-top:16px;background:var(--green-light);border-radius:10px;padding:14px;font-size:13px">
+        <strong>🌿 Sathvik's Gut Tips:</strong><br>
+        • Start with warm water + lemon 🍋<br>
+        • Chew slowly — 20 chews per bite<br>
+        • Include curd, buttermilk, fermented rice<br>
+        • Avoid cold drinks during meals
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+async function clientLogWeight(clientId) {
+  const w = parseFloat(document.getElementById('cw-input').value);
+  if(!w){showToast('❌ Enter a weight');return;}
+  showLoading('Saving...');
+  try {
+    await dbInsertWeight({client_id:clientId,date:new Date().toISOString().split('T')[0],weight:w,note:'Self-logged'});
+    const h = (currentClientObj.height||170)/100;
+    await dbUpdateClient(clientId,{weight:w,bmi:parseFloat((w/(h*h)).toFixed(1))});
+    currentClientObj.weight=w;
+    const history=await dbGetWeightHistory(clientId);
+    const pd=await dbGetClientPortal(clientId)||{habits:[],gut:{},meals:{},reports:[]};
+    renderClientPages(currentClientObj,history,pd);
+    navTo('cp-home');
+    showToast('✅ Weight logged!');
+  } catch(e){showToast('❌ Error saving');}
+  finally{hideLoading();}
+}
+
+async function clientSaveTracking(clientId,height) {
+  const w=parseFloat(document.getElementById('t-weight').value);
+  if(!w){showToast('❌ Enter weight');return;}
+  showLoading('Saving...');
+  try {
+    await dbInsertWeight({client_id:clientId,date:document.getElementById('t-date').value,weight:w,note:document.getElementById('t-notes').value||'Self-tracked'});
+    const h=(parseFloat(height)||170)/100;
+    await dbUpdateClient(clientId,{weight:w,bmi:parseFloat((w/(h*h)).toFixed(1))});
+    currentClientObj.weight=w;
+    const history=await dbGetWeightHistory(clientId);
+    const pd=await dbGetClientPortal(clientId)||{habits:[],gut:{},meals:{},reports:[]};
+    renderClientPages(currentClientObj,history,pd);
+    navTo('cp-tracking');
+    showToast('✅ Entry saved!');
+  } catch(e){showToast('❌ Error saving');}
+  finally{hideLoading();}
+}
+
+let pendingMealKey=null;
+function addMealPhoto(cid,key){pendingMealKey={cid,key};document.getElementById('meal-file-input').click();}
+
+async function handleMealPhoto(e,cid) {
+  const file=e.target.files[0];if(!file||!pendingMealKey)return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    showLoading('Saving photo...');
+    try {
+      const pd=await dbGetClientPortal(cid)||{habits:[],gut:{},meals:{},reports:[]};
+      pd.meals=pd.meals||{};
+      pd.meals[pendingMealKey.key]=ev.target.result;
+      await dbUpsertClientPortal(cid,{meals:pd.meals,habits:pd.habits,gut:pd.gut,reports:pd.reports});
+      const history=await dbGetWeightHistory(cid);
+      renderClientPages(currentClientObj,history,pd);
+      navTo('cp-meals');
+      showToast('✅ Meal photo saved!');
+    } catch(err){showToast('❌ Error saving photo');}
+    finally{hideLoading();}
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleReportUpload(e,cid) {
+  const files=Array.from(e.target.files);
+  files.forEach(async f=>{
+    try {
+      const pd=await dbGetClientPortal(cid)||{habits:[],gut:{},meals:{},reports:[]};
+      pd.reports=[...(pd.reports||[]),f.name];
+      await dbUpsertClientPortal(cid,{meals:pd.meals,habits:pd.habits,gut:pd.gut,reports:pd.reports});
+      const el=document.getElementById('report-files-list');
+      if(el) el.innerHTML=pd.reports.map(r=>`<span class="file-chip">📄 ${r}</span>`).join('');
+    } catch(err){console.error(err);}
+  });
+  showToast('✅ '+files.length+' file(s) recorded!');
+}
+
+async function toggleHabit(cid,hi,di) {
+  try {
+    const pd=await dbGetClientPortal(cid)||{habits:[],gut:{},meals:{},reports:[]};
+    pd.habits=pd.habits||[];
+    pd.habits[hi].days[di]=pd.habits[hi].days[di]?0:1;
+    await dbUpsertClientPortal(cid,{meals:pd.meals,habits:pd.habits,gut:pd.gut,reports:pd.reports});
+    const history=await dbGetWeightHistory(cid);
+    renderClientPages(currentClientObj,history,pd);
+    navTo('cp-habits');
+  } catch(e){showToast('❌ Error saving');}
+}
+
+async function setGut(cid,key,val) {
+  try {
+    const pd=await dbGetClientPortal(cid)||{habits:[],gut:{},meals:{},reports:[]};
+    pd.gut=pd.gut||{};pd.gut[key]=val;
+    await dbUpsertClientPortal(cid,{meals:pd.meals,habits:pd.habits,gut:pd.gut,reports:pd.reports});
+    const history=await dbGetWeightHistory(cid);
+    renderClientPages(currentClientObj,history,pd);
+    navTo('cp-gut');
+  } catch(e){showToast('❌ Error saving');}
+}
+
+async function saveGutNotes(cid) {
+  const notes=document.getElementById('gut-notes').value;
+  try {
+    const pd=await dbGetClientPortal(cid)||{habits:[],gut:{},meals:{},reports:[]};
+    pd.gut=pd.gut||{};pd.gut.notes=notes;
+    await dbUpsertClientPortal(cid,{meals:pd.meals,habits:pd.habits,gut:pd.gut,reports:pd.reports});
+  } catch(e){}
+}
+
+// =============================================
+// UTILS
+// =============================================
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function showLoading(msg='Loading...') {
+  let el=document.getElementById('loading-overlay');
+  if(!el){
+    el=document.createElement('div');el.id='loading-overlay';el.className='loading-overlay';
+    el.innerHTML=`<div class="spinner"></div><p>${msg}</p>`;
+    document.body.appendChild(el);
+  } else { el.querySelector('p').textContent=msg; el.style.display='flex'; }
+}
+function hideLoading(){const el=document.getElementById('loading-overlay');if(el)el.style.display='none';}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const today=new Date().toISOString().split('T')[0];
+  ['r-date','c-start'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+});
+</script>
+
+<!--
+  ============================================================
+  📋 SUPABASE SQL — RUN THIS ONCE IN YOUR SUPABASE SQL EDITOR
+  ============================================================
+
+  CREATE TABLE IF NOT EXISTS clients (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    name TEXT NOT NULL,
+    phone TEXT, email TEXT, age INTEGER,
+    goal TEXT, start_date DATE, end_date DATE,
+    weight NUMERIC, height NUMERIC, bmi NUMERIC,
+    medical TEXT, fee INTEGER, payment TEXT DEFAULT 'Pending',
+    access_key TEXT UNIQUE, notes TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS weight_history (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+    date DATE DEFAULT CURRENT_DATE,
+    weight NUMERIC, note TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS reminders (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    note TEXT, date DATE, time TIME,
+    type TEXT, done BOOLEAN DEFAULT FALSE
+  );
+
+  CREATE TABLE IF NOT EXISTS client_portal (
+    client_id UUID PRIMARY KEY REFERENCES clients(id) ON DELETE CASCADE,
+    habits JSONB DEFAULT '[]',
+    gut JSONB DEFAULT '{}',
+    meals JSONB DEFAULT '{}',
+    reports JSONB DEFAULT '[]',
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE weight_history ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE client_portal ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Allow all" ON clients FOR ALL USING (true);
+  CREATE POLICY "Allow all" ON weight_history FOR ALL USING (true);
+  CREATE POLICY "Allow all" ON reminders FOR ALL USING (true);
+  CREATE POLICY "Allow all" ON client_portal FOR ALL USING (true);
+
+  ============================================================
+-->
+</body>
+</html>
