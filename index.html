@@ -541,7 +541,7 @@ tbody tr:hover{background:var(--green-light);}
 // SECURITY
 // ============================================================
 let loginAttempts = 0, loginBlockedUntil = 0;
-const MAX_ATTEMPTS = 5, BLOCK_MS = 5*60*1000, SESSION_MS = 30*60*1000;
+const MAX_ATTEMPTS = 5, BLOCK_MS = 5*60*1000, SESSION_MS = 1*60*1000;
 let sessionTimer = null;
 function resetSessionTimer() {
   clearTimeout(sessionTimer);
@@ -620,6 +620,10 @@ async function dbInsertWeight(e) {
 }
 async function dbUpdateClient(id,u) {
   const {error} = await db.from('clients').update(u).eq('id',id);
+  if (error) throw error;
+}
+async function dbDeleteClient(id) {
+  const {error} = await db.from('clients').delete().eq('id',id);
   if (error) throw error;
 }
 async function dbGetPortal(clientId) {
@@ -785,13 +789,25 @@ function renderAdminPages() {
         <button class="btn btn-primary" onclick="openModal('modal-add-client')">➕ Add Client</button>
       </div>
     </div>
+    <!-- Search + Filter Tabs -->
+    <div class="card" style="margin-bottom:16px;padding:14px 20px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <input id="client-search" type="text" placeholder="🔍 Search by name, phone or goal..." oninput="filterClients()" style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'"/>
+        <div style="display:flex;gap:6px;background:var(--green-light);padding:4px;border-radius:10px;flex-shrink:0">
+          <button id="filter-tab-all" class="scale-tab active" onclick="setClientFilter('all')">All</button>
+          <button id="filter-tab-active" class="scale-tab" onclick="setClientFilter('active')">✅ Active</button>
+          <button id="filter-tab-expired" class="scale-tab" onclick="setClientFilter('expired')">⏰ Expired</button>
+        </div>
+      </div>
+    </div>
     <div class="card"><div class="table-wrap"><table>
-      <thead><tr><th>Client</th><th>Goal</th><th>Plan Period</th><th>BMI</th><th>Fee</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody>${cl.map(c=>`
-        <tr class="client-row-clickable" onclick="openClientDrawer('${c.id}')">
+      <thead><tr><th>Client</th><th>Goal</th><th>Plan Period</th><th>Added On</th><th>BMI</th><th>Fee</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="clients-tbody">${cl.map(c=>`
+        <tr class="client-row-clickable" data-name="${(c.name||'').toLowerCase()}" data-phone="${(c.phone||'').toLowerCase()}" data-goal="${(c.goal||'').toLowerCase()}" data-status="${new Date(c.end_date)>=new Date()?'active':'expired'}" onclick="openClientDrawer('${c.id}')">
           <td><strong>${c.name}</strong><br><span style="font-size:12px;color:var(--muted)">${c.phone||''}</span><div class="click-hint">👁 Click to view</div></td>
           <td>${c.goal||'-'}</td>
           <td style="font-size:12px">${c.start_date||''} → ${c.end_date||''}</td>
+          <td style="font-size:12px;color:var(--muted)">${c.created_at?new Date(c.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'-'}</td>
           <td>${bmiBadge(c.bmi)}</td>
           <td>₹${(c.fee||0).toLocaleString()}</td>
           <td><span class="badge badge-${(c.payment||'pending').toLowerCase()}">${c.payment||'Pending'}</span></td>
@@ -799,6 +815,7 @@ function renderAdminPages() {
           <td onclick="event.stopPropagation()" style="display:flex;gap:6px;flex-wrap:wrap">
             <button class="btn btn-secondary btn-sm" onclick="openClientDrawer('${c.id}')">👁 View</button>
             <button class="btn btn-gold btn-sm" onclick="openShareKey('${c.id}')">📲 Key</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteClient('${c.id}')" title="Delete client">🗑️</button>
           </td>
         </tr>`).join('')}
       </tbody>
@@ -1205,6 +1222,40 @@ async function markReminderDone(id){
 
 async function markClientPaid(id){
   try{await dbUpdateClient(id,{payment:'Paid'});const c=clientsCache.find(x=>x.id===id);if(c)c.payment='Paid';renderAdminPages();navTo('payments');showToast('✅ Marked paid!');}catch(e){showToast('❌ Error');}
+}
+
+async function deleteClient(id){
+  const c=clientsCache.find(x=>x.id===id);if(!c) return;
+  if(!confirm(`⚠️ Delete "${c.name}"?\n\nThis will permanently remove the client and ALL their data (weight history, portal data, etc.).\n\nType OK to confirm.`)) return;
+  showLoading('Deleting client...');
+  try{
+    await dbDeleteClient(id);
+    clientsCache=clientsCache.filter(x=>x.id!==id);
+    renderAdminPages();navTo('clients');showToast('🗑️ Client deleted.');
+  }catch(e){showToast('❌ Error deleting: '+(e.message||''));}finally{hideLoading();}
+}
+
+// ============================================================
+// CLIENT SEARCH + FILTER
+// ============================================================
+let activeClientFilter = 'all';
+function setClientFilter(f){
+  activeClientFilter=f;
+  ['all','active','expired'].forEach(t=>{
+    const el=document.getElementById('filter-tab-'+t);
+    if(el) el.classList.toggle('active',t===f);
+  });
+  filterClients();
+}
+function filterClients(){
+  const q=(document.getElementById('client-search')||{value:''}).value.toLowerCase();
+  const rows=document.querySelectorAll('#clients-tbody tr');
+  rows.forEach(tr=>{
+    const name=tr.dataset.name||'',phone=tr.dataset.phone||'',goal=tr.dataset.goal||'',status=tr.dataset.status||'';
+    const matchText=!q||name.includes(q)||phone.includes(q)||goal.includes(q);
+    const matchFilter=activeClientFilter==='all'||status===activeClientFilter;
+    tr.style.display=(matchText&&matchFilter)?'':'none';
+  });
 }
 
 function renderRemindersList(){
