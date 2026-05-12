@@ -45,8 +45,8 @@ body{font-family:'DM Sans',sans-serif;background:#eef5f0;color:var(--text);min-h
 .btn-logout{width:100%;padding:9px;background:rgba(231,76,60,.12);color:#e74c3c;border:1px solid rgba(231,76,60,.2);border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;}
 #app{display:none;min-height:100vh;}
 .main-content{margin-left:230px;padding:28px;min-height:100vh;}
-.page{display:none;}
-.page.active{display:block;}
+.page{display:none;}.page.active{display:block;animation:fadeIn .15s ease;}
+@keyframes fadeIn{from{opacity:.7;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
 .page-header{margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .page-header h1{font-family:'Playfair Display',serif;font-size:26px;color:var(--dark);}
 .page-header p{color:var(--muted);font-size:13px;margin-top:2px;}
@@ -225,9 +225,9 @@ tbody tr:hover{background:var(--green-light);}
 .topbar-avatar{width:30px;height:30px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:140;}
 .sidebar-overlay.open{display:block;}
-.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--dark);z-index:200;border-top:1px solid rgba(255,255,255,.08);padding:6px 0 max(6px,env(safe-area-inset-bottom));}
+.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--dark);z-index:200;border-top:1px solid rgba(255,255,255,.08);padding:6px 0 max(6px,env(safe-area-inset-bottom));touch-action:manipulation;}
 .mobile-nav-items{display:flex;justify-content:space-around;}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 6px;cursor:pointer;color:rgba(255,255,255,.45);font-size:9px;font-weight:600;transition:color .15s;border:none;background:none;font-family:'DM Sans',sans-serif;min-width:40px;}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 6px;cursor:pointer;color:rgba(255,255,255,.45);font-size:9px;font-weight:600;transition:color .1s;border:none;background:none;font-family:'DM Sans',sans-serif;min-width:40px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .mobile-nav-item .mn-icon{font-size:17px;}
 .mobile-nav-item.active{color:var(--green-mid);}
 @media(min-width:769px){.topbar{display:none!important;}.mobile-bottom-nav{display:none!important;}.sidebar-overlay{display:none!important;}.sidebar{transform:none!important;}.main-content{margin-left:230px;padding-bottom:32px;}}
@@ -355,7 +355,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
       <div class="field"><label>Plan Start</label><input id="c-start" type="date"/></div>
       <div class="field"><label>Plan End</label><input id="c-end" type="date"/></div>
     </div>
-    <div class="form-row"><div class="field"><label>Weight (kg)</label><input id="c-weight" type="number" placeholder="65"/></div><div class="field"><label>Height (cm)</label><input id="c-height" type="number" placeholder="162"/></div></div>
+    <div class="form-row"><div class="field"><label>Weight (kg)</label><input id="c-weight" type="number" placeholder="65" min="20" max="300" step="0.1"/></div><div class="field"><label>Height (cm)</label><input id="c-height" type="number" placeholder="162" min="50" max="250" step="0.5"/></div></div>
     <div class="form-row"><div class="field"><label>🚨 Allergies</label><input id="c-allergies" type="text" placeholder="Peanuts, gluten, lactose..."/></div><div class="field"><label>👎 Dislikes / Avoid</label><input id="c-dislikes" type="text" placeholder="Bitter gourd, mushrooms..."/></div></div>
     <div class="form-row full"><div class="field"><label>Medical Notes</label><textarea id="c-medical" placeholder="Conditions, medications, PCOD, thyroid..."></textarea></div></div>
     <div class="form-row"><div class="field"><label>Monthly Fee (₹)</label><input id="c-fee" type="number" placeholder="2500"/></div><div class="field"><label>Payment Status</label><select id="c-payment"><option>Paid</option><option>Pending</option><option>Partial</option></select></div></div>
@@ -427,7 +427,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
       <div class="field"><label>Plan Start</label><input id="ec-start" type="date"/></div>
       <div class="field"><label>Plan End</label><input id="ec-end" type="date"/></div>
     </div>
-    <div class="form-row"><div class="field"><label>Weight (kg)</label><input id="ec-weight" type="number"/></div><div class="field"><label>Height (cm)</label><input id="ec-height" type="number"/></div></div>
+    <div class="form-row"><div class="field"><label>Weight (kg)</label><input id="ec-weight" type="number" min="20" max="300" step="0.1"/></div><div class="field"><label>Height (cm)</label><input id="ec-height" type="number" min="50" max="250" step="0.5"/></div></div>
     <div class="form-row"><div class="field"><label>🚨 Allergies</label><input id="ec-allergies" type="text"/></div><div class="field"><label>👎 Dislikes / Avoid</label><input id="ec-dislikes" type="text"/></div></div>
     <div class="form-row full"><div class="field"><label>Medical Notes</label><textarea id="ec-medical"></textarea></div></div>
     <div class="form-row"><div class="field"><label>Monthly Fee (₹)</label><input id="ec-fee" type="number"/></div><div class="field"><label>Payment Status</label><select id="ec-payment"><option>Paid</option><option>Pending</option><option>Partial</option></select></div></div>
@@ -460,12 +460,10 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // INIT
 // ═══════════════════════════════════════
 let loginAttempts=0,loginBlockedUntil=0;
-const MAX_ATTEMPTS=5,BLOCK_MS=5*60*1000,SESSION_MS=30*60*1000;
+const MAX_ATTEMPTS=5,BLOCK_MS=5*60*1000,SESSION_MS=60*60*1000;
 let sessionTimer=null;
 function resetSessionTimer(){clearTimeout(sessionTimer);sessionTimer=setTimeout(()=>{if(document.getElementById('app').style.display!=='none'){showToast('⏰ Session expired. Logging out...');setTimeout(logout,2000);}},SESSION_MS);}
-document.addEventListener('click',resetSessionTimer);
-document.addEventListener('keypress',resetSessionTimer);
-document.addEventListener('touchstart',resetSessionTimer);
+['click','keypress','touchstart','touchmove','scroll','pointerdown'].forEach(ev=>document.addEventListener(ev,resetSessionTimer,{passive:true}));
 function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebar-overlay'),b=document.getElementById('hamburger-btn');const open=s.classList.contains('mobile-open');if(open){s.classList.remove('mobile-open');o.classList.remove('open');b.classList.remove('open');}else{s.classList.add('mobile-open');o.classList.add('open');b.classList.add('open');}}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('mobile-open');document.getElementById('sidebar-overlay').classList.remove('open');const b=document.getElementById('hamburger-btn');if(b)b.classList.remove('open');}
 const{createClient}=supabase;
@@ -487,7 +485,7 @@ async function dbGetPortal(cid){const{data}=await db.from('client_portal').selec
 async function dbSavePortal(cid,pd){const{error}=await db.from('client_portal').upsert({client_id:cid,...pd},{onConflict:'client_id'});if(error)throw error;}
 async function dbGetPaymentHistory(){const{data,error}=await db.from('payment_history').select('*,clients(name)').order('paid_date',{ascending:false});return error?[]:(data||[]);}
 async function dbInsertPayment(p){const{data,error}=await db.from('payment_history').insert([p]).select();if(error)throw error;return data[0];}
-function emptyPortal(){return{habits:[],gut:{bloating:null,digestion:null,energy:null,notes:''},gut_history:[],meals:{},reports:[],body_comp:[],diet_log:{}};}
+function emptyPortal(){return{habits:[],gut:{bloating:null,digestion:null,energy:null,notes:''},gut_history:[],meals:{},meal_history:{},reports:[],body_comp:[],diet_log:{}};}
 
 // ═══════════════════════════════════════
 // HELPERS
@@ -501,6 +499,8 @@ function hour(){const h=new Date().getHours();return h<12?'morning':h<17?'aftern
 // LOGIN
 // ═══════════════════════════════════════
 function setRole(role){currentRole=role;document.querySelectorAll('.role-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&role==='admin')||(i===1&&role==='client')));document.getElementById('admin-fields').style.display=role==='admin'?'':'none';document.getElementById('client-fields').style.display=role==='client'?'':'none';document.getElementById('login-error').style.display='none';}
+function saveSession(role,data){try{sessionStorage.setItem('sh_session',JSON.stringify({role,data,ts:Date.now()}));}catch(e){}}
+function clearSession(){try{sessionStorage.removeItem('sh_session');}catch(e){}}
 async function doLogin(){
   if(Date.now()<loginBlockedUntil){showLoginError('Too many attempts. Wait '+Math.ceil((loginBlockedUntil-Date.now())/1000)+' seconds.');return;}
   const btn=document.getElementById('login-btn');btn.disabled=true;btn.textContent='Logging in...';
@@ -508,20 +508,20 @@ async function doLogin(){
   try{
     if(currentRole==='admin'){
       const u=document.getElementById('admin-user').value.trim(),p=document.getElementById('admin-pass').value.trim();
-      if(u==='sathvik'&&p==='health2024'){loginAttempts=0;resetSessionTimer();await launchAdmin();}
+      if(u==='sathvik'&&p==='health2024'){loginAttempts=0;saveSession('admin',{u});resetSessionTimer();await launchAdmin();}
       else{loginAttempts++;if(loginAttempts>=MAX_ATTEMPTS){loginBlockedUntil=Date.now()+BLOCK_MS;loginAttempts=0;}showLoginError('Invalid username or password.');}
     }else{
       const key=document.getElementById('client-key').value.trim().toUpperCase();
       const{data,error}=await db.from('clients').select('*').eq('access_key',key).single();
       if(error||!data){loginAttempts++;if(loginAttempts>=MAX_ATTEMPTS){loginBlockedUntil=Date.now()+BLOCK_MS;loginAttempts=0;}showLoginError('Invalid access key. Check with Sathvik.');return;}
       if(new Date(data.end_date)<new Date()){document.getElementById('locked-overlay').classList.add('show');return;}
-      loginAttempts=0;resetSessionTimer();currentClientObj=data;await launchClient(data);
+      loginAttempts=0;saveSession('client',{key:data.access_key});resetSessionTimer();currentClientObj=data;await launchClient(data);
     }
   }catch(e){showLoginError('Connection error. Check your internet.');}
   finally{btn.disabled=false;btn.textContent='Enter Dashboard →';}
 }
 function showLoginError(msg){const e=document.getElementById('login-error');e.textContent=msg;e.style.display='block';}
-function logout(){document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('locked-overlay').classList.remove('show');['admin-user','admin-pass','client-key'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});closeClientDrawer();closeSidebar();const mbn=document.getElementById('mobile-bottom-nav');if(mbn)mbn.style.display='none';clearTimeout(sessionTimer);}
+function logout(){clearSession();document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('locked-overlay').classList.remove('show');['admin-user','admin-pass','client-key'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});closeClientDrawer();closeSidebar();const mbn=document.getElementById('mobile-bottom-nav');if(mbn)mbn.style.display='none';clearTimeout(sessionTimer);}
 
 // ═══════════════════════════════════════
 // ADMIN LAUNCH
@@ -539,7 +539,18 @@ async function launchAdmin(){
   renderAdminPages();hideLoading();
 }
 function renderNav(items,def){document.getElementById('nav-items').innerHTML='<div class="nav-label">Navigation</div>'+items.map(i=>`<div class="nav-item" id="nav-${i.id}" onclick="navTo('${i.id}');closeSidebar()"><span class="icon">${i.icon}</span><span>${i.label}</span></div>`).join('');navTo(def);}
-function navTo(id){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));const el=document.getElementById('nav-'+id);if(el)el.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.toggle('active',n.dataset.id===id));if(id==='cp-diet'&&currentClientObj)initDietPage();}
+function navTo(id){
+  // Immediate visual feedback on mobile bottom nav
+  document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.toggle('active',n.dataset.id===id));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('nav-'+id);if(el)el.classList.add('active');
+  // Use rAF to avoid layout thrash before page switch
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
+    if(id==='cp-diet'&&currentClientObj)initDietPage();
+  });
+}
 
 // ═══════════════════════════════════════
 // ADMIN PAGES
@@ -842,9 +853,24 @@ function renderDrawerWeight(){
 // ─── MEALS ───
 function renderDrawerMeals(){
   if(!drawerClientData)return;
-  const{portal:pd}=drawerClientData;const meals=pd&&pd.meals?pd.meals:{};
-  const slots=['breakfast','lunch','dinner','snack1','snack2','snack3'];const labels={breakfast:'Breakfast',lunch:'Lunch',dinner:'Dinner',snack1:'Snack 1',snack2:'Snack 2',snack3:'Snack 3'};const hasAny=slots.some(s=>meals[s]);
-  document.getElementById('drawer-body').innerHTML=`<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;color:var(--dark)">🍽️ Meal Photos</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Click to enlarge</div></div>${!hasAny?'<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px">🍽️</div><p>No meal photos yet</p></div>':`<div class="meal-display-grid">${slots.map(s=>{const raw=meals[s];const src=raw?(typeof raw==='object'?raw.src:raw):null;const dt=raw&&typeof raw==='object'?raw.date:'';return src?`<div class="meal-display-slot" onclick="openLightbox('${src}','${labels[s]}')"><img src="${src}" alt="${labels[s]}"/><div class="meal-slot-name">${labels[s]} 🔍<br><span style="font-size:9px;color:var(--muted)">${dt}</span></div></div>`:`<div class="meal-display-slot empty"><div style="font-size:22px;color:var(--border)">📷</div><div class="meal-slot-name">${labels[s]}</div></div>`;}).join('')}</div>`}`;
+  const{portal:pd}=drawerClientData;const meals=pd&&pd.meals?pd.meals:{};const mealHist=pd&&pd.meal_history?pd.meal_history:{};
+  const slots=['breakfast','lunch','dinner','snack1','snack2','snack3'];const labels={breakfast:'Breakfast',lunch:'Lunch',dinner:'Dinner',snack1:'Snack 1',snack2:'Snack 2',snack3:'Snack 3'};
+  const hasAny=slots.some(s=>meals[s]||(mealHist[s]&&mealHist[s].length>0));
+  let html=`<div style="margin-bottom:14px"><div style="font-size:13px;font-weight:600;color:var(--dark)">🍽️ Meal Photo History</div><div style="font-size:12px;color:var(--muted);margin-top:3px">All photos with date stamps — newest first</div></div>`;
+  if(!hasAny){html+='<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px">🍽️</div><p>No meal photos yet</p></div>';}
+  else{
+    slots.forEach(s=>{
+      const hist=mealHist[s]?[...mealHist[s]]:[];
+      const legacy=meals[s];const legacySrc=legacy?(typeof legacy==='object'?legacy.src:legacy):null;const legacyDt=legacy&&typeof legacy==='object'?legacy.date:'';
+      if(legacySrc&&!hist.some(h=>h.src===legacySrc))hist.unshift({src:legacySrc,date:legacyDt||'Earlier',time:''});
+      if(hist.length===0)return;
+      html+=`<div style="margin-bottom:18px"><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">${labels[s]} <span style="background:var(--green-light);color:var(--green);border-radius:8px;padding:1px 7px;font-size:10px">${hist.length} photo${hist.length!==1?'s':''}</span></div>`;
+      html+=`<div style="display:flex;gap:9px;overflow-x:auto;padding-bottom:4px">`;
+      hist.slice().reverse().forEach(h=>{html+=`<div style="flex-shrink:0;width:120px;cursor:pointer" onclick="openLightbox('${h.src}','${labels[s]} — ${h.date||''} ${h.time||''}')"><img src="${h.src}" style="width:120px;height:88px;object-fit:cover;border-radius:9px;border:1.5px solid var(--border);display:block;transition:transform .2s" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'"/><div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">${h.date||'—'}${h.time?' '+h.time:''}</div></div>`;});
+      html+=`</div></div>`;
+    });
+  }
+  document.getElementById('drawer-body').innerHTML=html;
 }
 
 // ─── HABITS ───
@@ -914,6 +940,8 @@ async function saveHabitGoal(){
 async function addClient(){
   const name=document.getElementById('c-name').value.trim();if(!name){showToast('❌ Name required');return;}
   const w=parseFloat(document.getElementById('c-weight').value)||0,h=parseFloat(document.getElementById('c-height').value)||0;
+  if(w&&(w<20||w>300)){showToast('❌ Weight must be between 20–300 kg');return;}
+  if(h&&(h<50||h>250)){showToast('❌ Height must be between 50–250 cm');return;}
   const bmi=(w&&h)?parseFloat((w/((h/100)**2)).toFixed(1)):null;
   const key='SH-'+name.slice(0,4).toUpperCase().replace(/[^A-Z]/g,'X')+Math.floor(1000+Math.random()*9000);
   const btn=document.getElementById('save-client-btn');btn.disabled=true;btn.textContent='Saving...';
@@ -1015,6 +1043,8 @@ async function updateClient(){
   const name=document.getElementById('ec-name').value.trim();if(!name){showToast('❌ Name required');return;}
   const w=parseFloat(document.getElementById('ec-weight').value)||null;
   const h=parseFloat(document.getElementById('ec-height').value)||null;
+  if(w&&(w<20||w>300)){showToast('❌ Weight must be between 20–300 kg');return;}
+  if(h&&(h<50||h>250)){showToast('❌ Height must be between 50–250 cm');return;}
   const bmi=(w&&h)?parseFloat((w/((h/100)**2)).toFixed(1)):null;
   const btn=document.getElementById('update-client-btn');btn.disabled=true;btn.textContent='Saving...';
   try{
@@ -1137,8 +1167,8 @@ async function launchClient(c){
   const ta=document.getElementById('topbar-avatar');if(ta)ta.textContent=c.name.charAt(0);
   const history=await dbGetWeightHistory(c.id);let pd=await dbGetPortal(c.id);
   if(!pd){pd=emptyPortal();pd.habits=[{name:'💧 Water (8 glasses)',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'},{name:'🚶 Walk 30 mins',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'},{name:'😴 Sleep 7-8 hrs',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'},{name:'🥗 Eat veggies',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'},{name:'🚫 No junk food',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'}];}
-  renderNav([{id:'cp-home',icon:'🏠',label:'Dashboard'},{id:'cp-tracking',icon:'📈',label:'Tracking'},{id:'cp-meals',icon:'🍽️',label:'Meals'},{id:'cp-reports',icon:'📄',label:'Reports'},{id:'cp-habits',icon:'✅',label:'Habits'},{id:'cp-gut',icon:'🫁',label:'Gut Health'},{id:'cp-diet',icon:'🥗',label:'Diet Tracker'}],'cp-home');
-  const mbn=document.getElementById('mobile-bottom-nav');if(mbn){mbn.style.display='block';document.getElementById('mobile-nav-items').innerHTML=[{id:'cp-home',icon:'🏠',label:'Home'},{id:'cp-tracking',icon:'📈',label:'Track'},{id:'cp-meals',icon:'🍽️',label:'Meals'},{id:'cp-habits',icon:'✅',label:'Habits'},{id:'cp-gut',icon:'🫁',label:'Gut'},{id:'cp-diet',icon:'🥗',label:'Diet'}].map(i=>`<button class="mobile-nav-item" data-id="${i.id}" onclick="navTo('${i.id}')"><span class="mn-icon">${i.icon}</span>${i.label}</button>`).join('');}
+  renderNav([{id:'cp-home',icon:'🏠',label:'Dashboard'},{id:'cp-profile',icon:'👤',label:'My Profile'},{id:'cp-tracking',icon:'📈',label:'Tracking'},{id:'cp-meals',icon:'🍽️',label:'Meals'},{id:'cp-reports',icon:'📄',label:'Reports'},{id:'cp-habits',icon:'✅',label:'Habits'},{id:'cp-gut',icon:'🫁',label:'Gut Health'},{id:'cp-diet',icon:'🥗',label:'Diet Tracker'}],'cp-home');
+  const mbn=document.getElementById('mobile-bottom-nav');if(mbn){mbn.style.display='block';document.getElementById('mobile-nav-items').innerHTML=[{id:'cp-home',icon:'🏠',label:'Home'},{id:'cp-tracking',icon:'📈',label:'Track'},{id:'cp-meals',icon:'🍽️',label:'Meals'},{id:'cp-habits',icon:'✅',label:'Habits'},{id:'cp-profile',icon:'👤',label:'Profile'},{id:'cp-diet',icon:'🥗',label:'Diet'}].map(i=>`<button class="mobile-nav-item" data-id="${i.id}" onclick="navTo('${i.id}')"><span class="mn-icon">${i.icon}</span>${i.label}</button>`).join('');}
   renderClientPages(c,history,pd);hideLoading();
 }
 
@@ -1183,10 +1213,103 @@ function renderClientPages(c,history,pd){
   </div>
 
   <div id="page-cp-meals" class="page">
-    <div class="page-header"><h1>Meal Photos 🍽️</h1><p>Date saved automatically</p></div>
-    <div class="card"><p style="font-size:12px;color:var(--muted);margin-bottom:15px">Tap a slot to upload. Date is auto-captured.</p>
-      <div class="meal-grid">${['Breakfast','Lunch','Dinner','Snack 1','Snack 2','Snack 3'].map(slot=>{const key=slot.toLowerCase().replace(' ','');const raw=pd.meals&&pd.meals[key];const src=raw?(typeof raw==='object'?raw.src:raw):null;const dt=raw&&typeof raw==='object'?raw.date:'';return`<div class="meal-slot" onclick="addMealPhoto('${c.id}','${key}')">${src?`<img src="${src}"/><div class="view-overlay">📷 Change</div>${dt?`<span class="meal-date-badge">${dt}</span>`:''}`:'<div style="font-size:26px">📷</div>'}<div class="slot-label">${slot}</div></div>`;}).join('')}</div>
+    <div class="page-header"><h1>Meal Photos 🍽️</h1><p>Full history — every photo with date stamp</p></div>
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px">📅 Today's Meals</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:15px">Tap a slot to add a new photo. Every upload is saved with its date and time.</p>
+      <div class="meal-grid">${['Breakfast','Lunch','Dinner','Snack 1','Snack 2','Snack 3'].map(slot=>{
+        const key=slot.toLowerCase().replace(' ','');
+        const hist=pd.meal_history&&pd.meal_history[key]?pd.meal_history[key]:[];
+        const latest=hist.length>0?hist[hist.length-1]:null;
+        const legacyRaw=pd.meals&&pd.meals[key];const legacySrc=legacyRaw?(typeof legacyRaw==='object'?legacyRaw.src:legacyRaw):null;
+        const src=latest?latest.src:legacySrc;
+        const dt=latest?latest.date:(legacyRaw&&typeof legacyRaw==='object'?legacyRaw.date:'');
+        const count=hist.length+(legacySrc&&!latest?1:0);
+        return`<div class="meal-slot" onclick="addMealPhoto('${c.id}','${key}')">
+          ${src?`<img src="${src}"/><div class="view-overlay">📷 Add New<br><span style="font-size:9px">${count} photo${count!==1?'s':''}</span></div>${dt?`<span class="meal-date-badge">${dt}</span>`:''}`:
+          '<div style="font-size:26px">📷</div>'}
+          <div class="slot-label">${slot}${count>0?` <span style="background:var(--green);color:white;border-radius:9px;padding:1px 5px;font-size:8px">${count}</span>`:''}</div>
+        </div>`;
+      }).join('')}</div>
       <input type="file" id="meal-file-input" accept="image/*" style="display:none" onchange="handleMealPhoto(event,'${c.id}')"/>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:14px">📚 Full Meal History</div>
+      ${['Breakfast','Lunch','Dinner','Snack 1','Snack 2','Snack 3'].map(slot=>{
+        const key=slot.toLowerCase().replace(' ','');
+        const hist=pd.meal_history&&pd.meal_history[key]?[...pd.meal_history[key]]:[];
+        const legacyRaw=pd.meals&&pd.meals[key];const legacySrc=legacyRaw?(typeof legacyRaw==='object'?legacyRaw.src:legacyRaw):null;
+        const legacyDt=legacyRaw&&typeof legacyRaw==='object'?legacyRaw.date:'';
+        if(legacySrc&&!hist.some(h=>h.src===legacySrc))hist.unshift({src:legacySrc,date:legacyDt||'Earlier'});
+        if(hist.length===0)return'';
+        return`<div style="margin-bottom:18px">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">${slot} <span style="background:var(--green-light);color:var(--green);border-radius:8px;padding:1px 7px;font-size:10px">${hist.length} photo${hist.length!==1?'s':''}</span></div>
+          <div style="display:flex;gap:9px;overflow-x:auto;padding-bottom:4px">${hist.slice().reverse().map(h=>`
+            <div style="flex-shrink:0;width:110px;cursor:pointer" onclick="openLightbox('${h.src}','${slot} — ${h.date||''}')">
+              <img src="${h.src}" style="width:110px;height:80px;object-fit:cover;border-radius:9px;border:1.5px solid var(--border);display:block"/>
+              <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">${h.date||'—'}</div>
+            </div>`).join('')}</div>
+        </div>`;
+      }).join('')||'<p style="color:var(--muted);font-size:13px">No meal photos yet. Start adding photos above!</p>'}
+    </div>
+  </div>
+
+  <div id="page-cp-profile" class="page">
+    <div class="page-header"><h1>My Profile 👤</h1><p>Your personal health information</p></div>
+    <div class="card" style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:white;flex-shrink:0">${c.name.charAt(0)}</div>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--dark);font-weight:700">${c.name}</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">${c.goal||'Wellness Journey'} · Member since ${formatDate(c.start_date)}</div>
+          <span class="badge badge-active" style="margin-top:5px;display:inline-block">${daysLeft} days remaining</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="background:var(--green-light);border-radius:12px;padding:14px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">📋 Personal Details</div>
+          <div style="font-size:13px;line-height:2.1">
+            <div>Age: <strong>${c.age||'-'} yrs</strong></div>
+            <div>Phone: <strong>${c.phone||'-'}</strong></div>
+            <div>Email: <strong>${c.email||'-'}</strong></div>
+            <div>Goal: <strong>${c.goal||'-'}</strong></div>
+          </div>
+        </div>
+        <div style="background:var(--green-light);border-radius:12px;padding:14px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">📊 Health Stats</div>
+          <div style="font-size:13px;line-height:2.1">
+            <div>Weight: <strong>${c.weight||'-'} kg</strong></div>
+            <div>Height: <strong>${c.height||'-'} cm</strong></div>
+            <div>BMI: <strong>${bmi!=='-'?bmi:'-'}</strong></div>
+            <div>Change: <strong style="color:${parseFloat(diff)<0?'var(--green)':parseFloat(diff)>0?'var(--red)':'var(--muted)'}">${parseFloat(diff)>0?'+':''}${diff} kg</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    ${c.allergies||c.dislikes?`<div class="card" style="margin-bottom:18px;border-left:4px solid var(--red)">
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:12px">⚠️ Dietary Restrictions</div>
+      ${c.allergies?`<div style="margin-bottom:8px"><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Allergies</span><div style="font-size:14px;margin-top:3px">${c.allergies}</div></div>`:''}
+      ${c.dislikes?`<div><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Dislikes / Avoid</span><div style="font-size:14px;margin-top:3px">${c.dislikes}</div></div>`:''}
+    </div>`:''}
+    ${c.medical?`<div class="card" style="margin-bottom:18px;border-left:4px solid var(--amber)">
+      <div style="font-size:13px;font-weight:700;color:#856404;margin-bottom:8px">⚕️ Medical Notes</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6">${c.medical}</div>
+    </div>`:''}
+    <div class="card" style="margin-bottom:18px">
+      <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:14px">📅 Plan Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Start Date</div><div style="font-size:14px;font-weight:700">${formatDate(c.start_date)}</div></div>
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">End Date</div><div style="font-size:14px;font-weight:700">${formatDate(c.end_date)}</div></div>
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Days Left</div><div style="font-family:'Playfair Display',serif;font-size:22px;color:${daysLeft<=7?'var(--red)':daysLeft<=14?'var(--amber)':'var(--green)'}">${daysLeft}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:14px">✏️ Update My Stats</div>
+      <div class="form-row">
+        <div class="field"><label>Weight (kg)</label><input id="profile-weight" type="number" min="20" max="300" step="0.1" placeholder="${c.weight||'Enter weight'}" value="${c.weight||''}"/></div>
+        <div class="field"><label>Height (cm)</label><input id="profile-height" type="number" min="50" max="250" step="0.5" placeholder="${c.height||'Enter height'}" value="${c.height||''}"/></div>
+      </div>
+      <div class="form-actions"><button class="btn btn-primary" onclick="clientUpdateProfile('${c.id}')">💾 Update Stats</button></div>
     </div>
   </div>
 
@@ -1264,19 +1387,73 @@ async function submitGutEntry(cid){const date=document.getElementById('gut-entry
 // ═══════════════════════════════════════
 // WEIGHT (CLIENT)
 // ═══════════════════════════════════════
-async function clientLogWeight(cid){const w=parseFloat(document.getElementById('cw-input').value);if(!w){showToast('❌ Enter weight');return;}showLoading('Saving...');try{await dbInsertWeight({client_id:cid,date:new Date().toISOString().split('T')[0],weight:w,note:'Self-logged'});if(currentClientObj.height){const h=currentClientObj.height/100;await dbUpdateClient(cid,{weight:w,bmi:parseFloat((w/(h*h)).toFixed(1))});}else await dbUpdateClient(cid,{weight:w});currentClientObj.weight=w;const history=await dbGetWeightHistory(cid);const pd=await dbGetPortal(cid)||emptyPortal();window._currentPd=pd;renderClientPages(currentClientObj,history,pd);navTo('cp-home');showToast('✅ Weight logged!');}catch(e){showToast('❌ Error');}finally{hideLoading();}}
+async function clientLogWeight(cid){const w=parseFloat(document.getElementById('cw-input').value);if(!w){showToast('❌ Enter weight');return;}if(w<20||w>300){showToast('❌ Weight must be between 20–300 kg');return;}showLoading('Saving...');try{await dbInsertWeight({client_id:cid,date:new Date().toISOString().split('T')[0],weight:w,note:'Self-logged'});if(currentClientObj.height){const h=currentClientObj.height/100;await dbUpdateClient(cid,{weight:w,bmi:parseFloat((w/(h*h)).toFixed(1))});}else await dbUpdateClient(cid,{weight:w});currentClientObj.weight=w;const history=await dbGetWeightHistory(cid);const pd=await dbGetPortal(cid)||emptyPortal();window._currentPd=pd;renderClientPages(currentClientObj,history,pd);navTo('cp-home');showToast('✅ Weight logged!');}catch(e){showToast('❌ Error');}finally{hideLoading();}}
 async function clientSaveTracking(cid,height){const w=parseFloat(document.getElementById('t-weight').value);if(!w){showToast('❌ Enter weight');return;}showLoading('Saving...');try{await dbInsertWeight({client_id:cid,date:document.getElementById('t-date').value,weight:w,note:document.getElementById('t-notes').value||'Self-tracked'});const h=parseFloat(height)||0;if(h>0)await dbUpdateClient(cid,{weight:w,bmi:parseFloat((w/((h/100)**2)).toFixed(1))});else await dbUpdateClient(cid,{weight:w});currentClientObj.weight=w;const history=await dbGetWeightHistory(cid);const pd=await dbGetPortal(cid)||emptyPortal();window._currentPd=pd;renderClientPages(currentClientObj,history,pd);navTo('cp-tracking');showToast('✅ Entry saved!');}catch(e){showToast('❌ Error');}finally{hideLoading();}}
 async function clientSaveBodyComp(cid){showLoading('Saving...');try{const today=new Date().toISOString().split('T')[0];const entry={date:today,body_fat:parseFloat(document.getElementById('bc-fat').value)||null,muscle_mass:parseFloat(document.getElementById('bc-muscle').value)||null,visceral_fat:parseFloat(document.getElementById('bc-visceral').value)||null,bmr:parseFloat(document.getElementById('bc-bmr').value)||null};let pd=await dbGetPortal(cid)||emptyPortal();(pd.body_comp=pd.body_comp||[]).push(entry);await dbSavePortal(cid,pd);window._currentPd=pd;const history=await dbGetWeightHistory(cid);renderClientPages(currentClientObj,history,pd);navTo('cp-tracking');showToast('✅ Saved!');}catch(e){showToast('❌ Error');console.error(e);}finally{hideLoading();}}
-async function handleScaleScreenshot(e,cid){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=async ev=>{showLoading('Saving...');try{let pd=await dbGetPortal(cid)||emptyPortal();(pd.body_comp=pd.body_comp||[]).push({date:new Date().toISOString().split('T')[0],screenshot:ev.target.result});await dbSavePortal(cid,pd);window._currentPd=pd;const history=await dbGetWeightHistory(cid);renderClientPages(currentClientObj,history,pd);navTo('cp-tracking');showToast('✅ Saved!');}catch(err){showToast('❌ Error');}finally{hideLoading();};};reader.readAsDataURL(file);}
+async function handleScaleScreenshot(e,cid){const file=e.target.files[0];if(!file)return;e.target.value='';showLoading('Saving...');try{const compressed=await compressImage(file);let pd=await dbGetPortal(cid)||emptyPortal();(pd.body_comp=pd.body_comp||[]).push({date:new Date().toISOString().split('T')[0],screenshot:compressed});await dbSavePortal(cid,pd);window._currentPd=pd;const history=await dbGetWeightHistory(cid);renderClientPages(currentClientObj,history,pd);navTo('cp-tracking');showToast('✅ Saved!');}catch(err){showToast('❌ Error saving — try a smaller image');}finally{hideLoading();}}
 function switchScaleTab(tab){document.getElementById('scale-tab-manual').classList.toggle('active',tab==='manual');document.getElementById('scale-tab-screenshot').classList.toggle('active',tab==='screenshot');document.getElementById('scale-manual-section').style.display=tab==='manual'?'':'none';document.getElementById('scale-screenshot-section').style.display=tab==='screenshot'?'':'none';}
-async function clientUpdateHeight(cid){const h=parseFloat(document.getElementById('client-height-input').value);if(!h||h<50||h>250){showToast('❌ Enter valid height');return;}showLoading('Saving...');try{await dbUpdateClient(cid,{height:h});currentClientObj.height=h;if(currentClientObj.weight){const bmi=parseFloat((currentClientObj.weight/((h/100)**2)).toFixed(1));await dbUpdateClient(cid,{bmi});currentClientObj.bmi=bmi;}const history=await dbGetWeightHistory(cid);const pd=await dbGetPortal(cid)||emptyPortal();window._currentPd=pd;renderClientPages(currentClientObj,history,pd);navTo('cp-home');showToast('✅ Height updated!');}catch(e){showToast('❌ Error');}finally{hideLoading();}}
+async function clientUpdateProfile(cid){
+  const w=parseFloat(document.getElementById('profile-weight').value);
+  const h=parseFloat(document.getElementById('profile-height').value);
+  if(!w&&!h){showToast('❌ Enter at least weight or height');return;}
+  if(w&&(w<20||w>300)){showToast('❌ Weight must be between 20–300 kg');return;}
+  if(h&&(h<50||h>250)){showToast('❌ Height must be between 50–250 cm');return;}
+  showLoading('Saving...');
+  try{
+    const updates={};
+    if(w)updates.weight=w;
+    if(h)updates.height=h;
+    const finalH=h||currentClientObj.height;
+    const finalW=w||currentClientObj.weight;
+    if(finalW&&finalH){updates.bmi=parseFloat((finalW/((finalH/100)**2)).toFixed(1));}
+    await dbUpdateClient(cid,updates);
+    Object.assign(currentClientObj,updates);
+    if(w)await dbInsertWeight({client_id:cid,date:new Date().toISOString().split('T')[0],weight:w,note:'Updated from profile'});
+    const history=await dbGetWeightHistory(cid);
+    const pd=await dbGetPortal(cid)||emptyPortal();
+    window._currentPd=pd;
+    renderClientPages(currentClientObj,history,pd);
+    navTo('cp-profile');
+    showToast('✅ Profile updated!');
+  }catch(e){showToast('❌ Error saving');}finally{hideLoading();}
+}
+async function clientUpdateHeight(cid){const h=parseFloat(document.getElementById('client-height-input').value);if(!h||h<50||h>250){showToast('❌ Enter valid height (50–250 cm)');return;}showLoading('Saving...');try{await dbUpdateClient(cid,{height:h});currentClientObj.height=h;if(currentClientObj.weight){const bmi=parseFloat((currentClientObj.weight/((h/100)**2)).toFixed(1));await dbUpdateClient(cid,{bmi});currentClientObj.bmi=bmi;}const history=await dbGetWeightHistory(cid);const pd=await dbGetPortal(cid)||emptyPortal();window._currentPd=pd;renderClientPages(currentClientObj,history,pd);navTo('cp-home');showToast('✅ Height updated!');}catch(e){showToast('❌ Error');}finally{hideLoading();}}
+
+// ═══════════════════════════════════════
+// IMAGE COMPRESSION
+// ═══════════════════════════════════════
+function compressImage(file,maxW=800,quality=0.75){return new Promise(res=>{const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*(maxW/w));w=maxW;}canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);res(canvas.toDataURL('image/jpeg',quality));};img.src=ev.target.result;};reader.readAsDataURL(file);});}
 
 // ═══════════════════════════════════════
 // MEALS
 // ═══════════════════════════════════════
 let pendingMealKey=null;
 function addMealPhoto(cid,key){pendingMealKey={cid,key};document.getElementById('meal-file-input').click();}
-async function handleMealPhoto(e,cid){const file=e.target.files[0];if(!file||!pendingMealKey)return;const reader=new FileReader();reader.onload=async ev=>{showLoading('Saving photo...');try{const dt=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});let pd=await dbGetPortal(cid)||emptyPortal();pd.meals=pd.meals||{};pd.meals[pendingMealKey.key]={src:ev.target.result,date:dt};await dbSavePortal(cid,pd);window._currentPd=pd;const history=await dbGetWeightHistory(cid);renderClientPages(currentClientObj,history,pd);navTo('cp-meals');showToast('✅ Meal photo saved!');}catch(err){showToast('❌ Error');}finally{hideLoading();};};reader.readAsDataURL(file);}
+async function handleMealPhoto(e,cid){
+  const file=e.target.files[0];if(!file||!pendingMealKey)return;e.target.value='';
+  showLoading('Compressing & saving photo...');
+  try{
+    const compressed=await compressImage(file);
+    const now=new Date();
+    const dt=now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const tm=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    const entry={src:compressed,date:dt,time:tm,ts:now.toISOString()};
+    let pd=await dbGetPortal(cid)||emptyPortal();
+    // Keep legacy meals object for backward compat
+    pd.meals=pd.meals||{};pd.meals[pendingMealKey.key]={src:compressed,date:dt};
+    // Append to history array
+    pd.meal_history=pd.meal_history||{};
+    pd.meal_history[pendingMealKey.key]=pd.meal_history[pendingMealKey.key]||[];
+    pd.meal_history[pendingMealKey.key].push(entry);
+    await dbSavePortal(cid,pd);
+    window._currentPd=pd;
+    const history=await dbGetWeightHistory(cid);
+    renderClientPages(currentClientObj,history,pd);
+    navTo('cp-meals');
+    showToast('✅ Meal photo saved — '+dt+' '+tm);
+  }catch(err){console.error(err);showToast('❌ Error saving photo — try a smaller image');}
+  finally{hideLoading();pendingMealKey=null;}
+}
 
 // ═══════════════════════════════════════
 // REPORTS
@@ -1294,10 +1471,26 @@ function showLoading(msg='Loading...'){let el=document.getElementById('loading-o
 function hideLoading(){const el=document.getElementById('loading-overlay');if(el)el.style.display='none';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async()=>{
   const today=new Date().toISOString().split('T')[0];
   ['r-date','c-start'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
   document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')doLogin();});
+  // Restore session on refresh
+  try{
+    const raw=sessionStorage.getItem('sh_session');
+    if(raw){
+      const sess=JSON.parse(raw);
+      const age=Date.now()-sess.ts;
+      if(age<SESSION_MS){
+        if(sess.role==='admin'){resetSessionTimer();await launchAdmin();}
+        else if(sess.role==='client'&&sess.data&&sess.data.key){
+          const{data,error}=await db.from('clients').select('*').eq('access_key',sess.data.key).single();
+          if(!error&&data&&new Date(data.end_date)>=new Date()){resetSessionTimer();currentClientObj=data;await launchClient(data);}
+          else clearSession();
+        }
+      }else{clearSession();}
+    }
+  }catch(e){clearSession();}
 });
 </script>
 </body>
