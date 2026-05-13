@@ -185,6 +185,7 @@ tbody tr:hover{background:var(--green-light);}
 .diet-table{width:100%;border-collapse:collapse;font-size:13px;}
 .diet-table th{padding:9px 7px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);background:var(--green-light);}
 .diet-table td{padding:4px 4px;border-bottom:1px solid #f0f7f3;vertical-align:top;}
+.diet-cal-col{min-width:72px;font-size:12px;}
 .diet-table td textarea{width:100%;padding:5px 7px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);background:white;outline:none;resize:none;transition:border .2s;min-height:48px;}
 .diet-table td textarea:focus{border-color:var(--green);}
 .diet-table .day-label{font-weight:700;font-size:12px;color:var(--dark);min-width:60px;white-space:nowrap;padding:7px 5px;}
@@ -226,7 +227,8 @@ tbody tr:hover{background:var(--green-light);}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:140;}
 .sidebar-overlay.open{display:block;}
 .mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--dark);z-index:200;border-top:1px solid rgba(255,255,255,.08);padding:6px 0 max(6px,env(safe-area-inset-bottom));touch-action:manipulation;}
-.mobile-nav-items{display:flex;justify-content:space-around;}
+.mobile-nav-items{display:flex;justify-content:flex-start;overflow-x:auto;padding:0 4px;gap:2px;scrollbar-width:none;-ms-overflow-style:none;}
+.mobile-nav-items::-webkit-scrollbar{display:none;}
 .mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 6px;cursor:pointer;color:rgba(255,255,255,.45);font-size:9px;font-weight:600;transition:color .1s;border:none;background:none;font-family:'DM Sans',sans-serif;min-width:40px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .mobile-nav-item .mn-icon{font-size:17px;}
 .mobile-nav-item.active{color:var(--green-mid);}
@@ -249,6 +251,22 @@ tbody tr:hover{background:var(--green-light);}
   .login-card{padding:32px 24px;}
 }
 @media(max-width:400px){.form-row.three,.form-row.four{grid-template-columns:1fr;}.main-content{padding:64px 10px 86px;}}
+/* Profile page mobile fixes */
+@media(max-width:600px){
+  .profile-stats-grid{grid-template-columns:1fr 1fr!important;}
+  .profile-plan-grid{grid-template-columns:1fr 1fr!important;}
+  .metric-cards{grid-template-columns:1fr 1fr!important;}
+  .meal-grid{grid-template-columns:1fr 1fr!important;}
+  .gut-history-row{grid-template-columns:1fr 1fr!important;font-size:12px;}
+}
+/* Habit day buttons — bigger touch targets on mobile */
+@media(max-width:768px){
+  .habit-day{width:30px;height:30px;font-size:11px;}
+  .diet-table{font-size:12px;}
+  .diet-table td textarea{min-height:38px;}
+  .wh-table th,.wh-table td{padding:7px 8px;font-size:12px;}
+  .drawer-tab{padding:9px 10px;font-size:11px;}
+}
 </style>
 </head>
 <body>
@@ -289,6 +307,7 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 <div class="topbar" id="topbar">
   <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="topbar-logo">🌿 Sathvik Health<small id="topbar-role">Admin</small></div>
+  <button id="topbar-logout-btn" onclick="logout()" style="display:none;background:rgba(231,76,60,.15);color:#e74c3c;border:1px solid rgba(231,76,60,.25);border-radius:8px;padding:5px 10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;touch-action:manipulation">🚪 Exit</button>
   <div class="topbar-avatar" id="topbar-avatar">S</div>
 </div>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -521,7 +540,7 @@ async function doLogin(){
   finally{btn.disabled=false;btn.textContent='Enter Dashboard →';}
 }
 function showLoginError(msg){const e=document.getElementById('login-error');e.textContent=msg;e.style.display='block';}
-function logout(){clearSession();document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('locked-overlay').classList.remove('show');['admin-user','admin-pass','client-key'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});closeClientDrawer();closeSidebar();const mbn=document.getElementById('mobile-bottom-nav');if(mbn)mbn.style.display='none';clearTimeout(sessionTimer);}
+function logout(){clearSession();document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('locked-overlay').classList.remove('show');['admin-user','admin-pass','client-key'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});closeClientDrawer();closeSidebar();const mbn=document.getElementById('mobile-bottom-nav');if(mbn)mbn.style.display='none';const tlb=document.getElementById('topbar-logout-btn');if(tlb)tlb.style.display='none';clearTimeout(sessionTimer);}
 
 // ═══════════════════════════════════════
 // ADMIN LAUNCH
@@ -540,15 +559,21 @@ async function launchAdmin(){
 }
 function renderNav(items,def){document.getElementById('nav-items').innerHTML='<div class="nav-label">Navigation</div>'+items.map(i=>`<div class="nav-item" id="nav-${i.id}" onclick="navTo('${i.id}');closeSidebar()"><span class="icon">${i.icon}</span><span>${i.label}</span></div>`).join('');navTo(def);}
 function navTo(id){
-  // Immediate visual feedback on mobile bottom nav
   document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.toggle('active',n.dataset.id===id));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const el=document.getElementById('nav-'+id);if(el)el.classList.add('active');
-  // Use rAF to avoid layout thrash before page switch
   requestAnimationFrame(()=>{
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
     if(id==='cp-diet'&&currentClientObj)initDietPage();
+    if(id==='cp-tracking'){
+      setTimeout(()=>{
+        const ctx=document.getElementById('tracking-weight-chart');if(!ctx)return;
+        if(window._trackChart)window._trackChart.destroy();
+        const hist=window._clientHistory||[];if(hist.length<2)return;
+        window._trackChart=new Chart(ctx,{type:'line',data:{labels:hist.map(h=>h.date),datasets:[{label:'kg',data:hist.map(h=>h.weight),borderColor:'#1a7a4a',backgroundColor:'rgba(26,122,74,.1)',borderWidth:2,pointRadius:hist.length>30?0:3,pointBackgroundColor:'#1a7a4a',tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#f0f7f3'},ticks:{font:{family:'DM Sans',size:10}}},x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},maxTicksLimit:7}}}}});
+      },80);
+    }
   });
 }
 
@@ -638,7 +663,15 @@ function renderAdminPages(){
       </div>
     </div>
     <div style="background:#f0fdf6;border:1.5px solid #b7e4cc;border-radius:12px;padding:14px;margin-bottom:18px;font-size:13px;color:var(--green)">
-      💡 <strong>Auto-Generate</strong> scans all clients and creates reminders for: pending payments, expiring plans, and overdue follow-ups — all in one click.
+      💡 <strong>Auto-Generate</strong> creates reminders for all active clients:
+      <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:var(--text)">
+        <div>📞 Weekly check-in call (every 7 days)</div>
+        <div>🥗 Diet plan refresh (every 30 days)</div>
+        <div>⚠️ Expiring plans (≤3 days warning)</div>
+        <div>💰 Pending payments follow-up</div>
+        <div>📅 Session day alerts</div>
+        <div>🔴 Expired plan renewal nudge</div>
+      </div>
     </div>
     <div class="card" id="reminders-list"></div>
   </div>`;
@@ -897,12 +930,81 @@ function renderDrawerGut(){
 }
 
 // ─── DIET ───
+// Simple calorie estimator — keyword-based lookup
+const CALORIE_DB={
+  // Grains & staples
+  'oats':150,'oatmeal':150,'upma':200,'poha':250,'idli':70,'dosa':120,'uttapam':180,
+  'roti':100,'chapati':100,'paratha':200,'rice':200,'brown rice':215,'dal rice':350,
+  'khichdi':250,'pongal':280,'biryani':400,'pulao':300,'bread':80,'toast':80,
+  // Dal & legumes
+  'dal':150,'sambar':120,'rajma':230,'chana':270,'chole':300,'moong':180,'lentils':150,
+  // Vegetables
+  'sabzi':120,'curry':180,'palak':80,'paneer':300,'tofu':120,'egg':80,'boiled egg':80,
+  'omelette':200,'scrambled egg':180,
+  // Proteins
+  'chicken':220,'grilled chicken':180,'chicken curry':280,'fish':150,'salmon':200,
+  'tuna':130,'curd':100,'yogurt':100,'dahi':100,'milk':120,'whey':120,'protein shake':130,
+  // Fruits
+  'banana':90,'apple':80,'orange':60,'mango':100,'papaya':60,'watermelon':50,
+  'pomegranate':80,'guava':60,'pear':60,'grapes':90,
+  // Snacks
+  'biscuit':150,'cookie':150,'nuts':180,'almonds':180,'peanuts':160,'chikki':200,
+  'mixture':180,'bhujia':200,'samosa':250,'pakora':200,'vada':180,'bonda':200,
+  'sandwich':280,'burger':450,'pizza':300,
+  // Drinks
+  'chai':50,'tea':30,'coffee':50,'green tea':5,'juice':120,'lassi':180,'buttermilk':40,
+  'coconut water':45,'lemon water':10,
+  // Sweets
+  'ladoo':150,'halwa':200,'kheer':200,'rasgulla':130,'gulab jamun':150,
+};
+function estimateCalories(text){
+  if(!text||text.trim()==='')return 0;
+  const lower=text.toLowerCase();let cal=0;
+  // Check multi-word keys first
+  const sorted=Object.keys(CALORIE_DB).sort((a,b)=>b.length-a.length);
+  const counted=new Set();
+  for(const k of sorted){
+    if(lower.includes(k)&&!counted.has(k)){
+      // Check for quantity multiplier (e.g. "2 eggs", "3 rotis")
+      const re=new RegExp('(\\d+)\\s*'+k.replace(/ /g,'\\s*'),'i');
+      const m=lower.match(re);
+      const qty=m?parseInt(m[1]):1;
+      cal+=CALORIE_DB[k]*Math.min(qty,5);// cap at 5x to avoid runaway estimates
+      counted.add(k);
+    }
+  }
+  // Fallback: if nothing matched, estimate ~200 kcal for non-empty entry
+  return cal>0?cal:(text.trim().length>3?200:0);
+}
 function renderDrawerDiet(){
   if(!drawerClientData)return;
   const{portal:pd}=drawerClientData;const dietLog=pd&&pd.diet_log?pd.diet_log:{};const weeks=Object.keys(dietLog).sort().reverse();const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   let html=`<div style="margin-bottom:13px"><div style="font-size:13px;font-weight:600;color:var(--dark)">🥗 Diet Log</div><div style="font-size:12px;color:var(--muted);margin-top:3px">${weeks.length} week(s) logged</div></div>`;
   if(weeks.length===0){html+='<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px">🥗</div><p style="margin-top:8px">No diet log yet</p></div>';}
-  else{weeks.slice(0,4).forEach(wk=>{const wkData=dietLog[wk]||{};html+=`<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px;padding:7px 10px;background:var(--green-light);border-radius:7px">📅 Week of ${wk}</div><div class="table-wrap"><table class="diet-table"><thead><tr><th>Day</th><th style="background:#fdf6e3;color:#856404">⚡ Quick</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th><th>Snacks</th></tr></thead><tbody>${DAYS.map(day=>{const row=(wkData&&wkData[day])||{};const has=row.breakfast||row.lunch||row.dinner||row.snacks||row.quick_log;return`<tr ${!has?'style="opacity:.35"':''}><td class="day-label">${day.slice(0,3)}</td><td style="background:#fffdf0">${row.quick_log||'—'}</td><td>${row.breakfast||'—'}</td><td>${row.lunch||'—'}</td><td>${row.dinner||'—'}</td><td>${row.snacks||'—'}</td></tr>`;}).join('')}</tbody></table></div></div>`;});}
+  else{
+    weeks.slice(0,4).forEach(wk=>{
+      const wkData=dietLog[wk]||{};
+      let weekCal=0;
+      const dayRows=DAYS.map(day=>{
+        const row=(wkData&&wkData[day])||{};
+        const has=row.breakfast||row.lunch||row.dinner||row.snacks||row.quick_log;
+        // Estimate calories for this day
+        const dayCal=[row.quick_log,row.breakfast,row.lunch,row.dinner,row.snacks].reduce((a,t)=>a+estimateCalories(t||''),0);
+        weekCal+=dayCal;
+        const calColor=dayCal<1200?'var(--amber)':dayCal>2500?'var(--red)':'var(--green)';
+        return`<tr ${!has?'style="opacity:.35"':''}><td class="day-label">${day.slice(0,3)}</td><td style="background:#fffdf0">${row.quick_log||'—'}</td><td>${row.breakfast||'—'}</td><td>${row.lunch||'—'}</td><td>${row.dinner||'—'}</td><td>${row.snacks||'—'}</td><td style="text-align:center;font-weight:700;color:${calColor};white-space:nowrap">${has&&dayCal>0?dayCal+' kcal':'—'}</td></tr>`;
+      });
+      const avgCal=weekCal>0?Math.round(weekCal/DAYS.filter(d=>{const r=wkData[d]||{};return r.breakfast||r.lunch||r.dinner||r.snacks||r.quick_log;}).length||1):0;
+      html+=`<div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px;padding:7px 10px;background:var(--green-light);border-radius:7px">
+          <span>📅 Week of ${wk}</span>
+          ${avgCal>0?`<span style="font-size:11px;font-weight:600;color:var(--dark)">Avg ~${avgCal} kcal/day</span>`:''}
+        </div>
+        <div class="table-wrap"><table class="diet-table"><thead><tr><th>Day</th><th style="background:#fdf6e3;color:#856404">⚡ Quick</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th><th>Snacks</th><th style="background:#e8f5ee;color:#1a7a4a">🔥 Est. Cal</th></tr></thead><tbody>${dayRows.join('')}</tbody></table></div>
+      </div>`;
+    });
+    html+=`<div style="margin-top:4px;padding:10px;background:#f0fdf6;border-radius:9px;font-size:12px;color:var(--muted)">⚠️ Calorie estimates are approximate, based on common Indian food portions. For accuracy, log specific quantities.</div>`;
+  }
   document.getElementById('drawer-body').innerHTML=html;
 }
 
@@ -1111,36 +1213,65 @@ async function renewClientPlan(){
 async function autoGenerateReminders(){
   showLoading('Scanning clients...');
   const today=new Date();const todayStr=today.toISOString().split('T')[0];
-  const in2Days=new Date(Date.now()+2*864e5).toISOString().split('T')[0];
   const in1Day=new Date(Date.now()+1*864e5).toISOString().split('T')[0];
+  const in2Days=new Date(Date.now()+2*864e5).toISOString().split('T')[0];
+  const in7Days=new Date(Date.now()+7*864e5).toISOString().split('T')[0];
   let added=0;
   try{
     for(const c of clientsCache){
       const dl=daysUntil(c.end_date);
       const existingNotes=remindersCache.filter(r=>!r.done).map(r=>r.note);
-      // 1. Pending/Partial payment reminder
-      if((c.payment==='Pending'||c.payment==='Partial')&&!existingNotes.some(n=>n.includes(c.name)&&n.includes('payment'))){
-        const r=await dbInsertReminder({note:`💰 ${c.name} — payment ${c.payment} (₹${(c.fee||0).toLocaleString()})`,date:in1Day,time:'10:00',type:'💬 WhatsApp Message',done:false});
+      const cName=c.name;
+
+      // ── 1. Pending/Partial payment ──
+      if((c.payment==='Pending'||c.payment==='Partial')&&!existingNotes.some(n=>n.includes(cName)&&n.includes('payment'))){
+        const r=await dbInsertReminder({note:`💰 ${cName} — payment ${c.payment} (₹${(c.fee||0).toLocaleString()})`,date:in1Day,time:'10:00',type:'💬 WhatsApp Message',done:false});
         remindersCache.push(r);added++;
       }
-      // 2. Plan expiring in 3 days or less
-      if(dl>=0&&dl<=3&&!existingNotes.some(n=>n.includes(c.name)&&n.includes('expir'))){
-        const r=await dbInsertReminder({note:`⚠️ ${c.name} — plan expires in ${dl} day(s). Discuss renewal!`,date:todayStr,time:'09:00',type:'📞 Call',done:false});
+
+      // ── 2. Plan expiring ≤3 days ──
+      if(dl>=0&&dl<=3&&!existingNotes.some(n=>n.includes(cName)&&n.includes('expir'))){
+        const r=await dbInsertReminder({note:`⚠️ ${cName} — plan expires in ${dl} day(s). Discuss renewal!`,date:todayStr,time:'09:00',type:'📞 Call',done:false});
         remindersCache.push(r);added++;
       }
-      // 3. Plan already expired — follow up
-      if(dl<0&&dl>=-7&&!existingNotes.some(n=>n.includes(c.name)&&n.includes('expired'))){
-        const r=await dbInsertReminder({note:`🔴 ${c.name} — plan expired ${Math.abs(dl)} day(s) ago. Send renewal offer!`,date:todayStr,time:'11:00',type:'💬 WhatsApp Message',done:false});
+
+      // ── 3. Plan already expired (≤7 days ago) ──
+      if(dl<0&&dl>=-7&&!existingNotes.some(n=>n.includes(cName)&&n.includes('expired'))){
+        const r=await dbInsertReminder({note:`🔴 ${cName} — plan expired ${Math.abs(dl)} day(s) ago. Send renewal offer!`,date:todayStr,time:'11:00',type:'💬 WhatsApp Message',done:false});
         remindersCache.push(r);added++;
       }
-      // 4. Next session is today or tomorrow
-      if(c.next_session&&(c.next_session===todayStr||c.next_session===in1Day)&&!existingNotes.some(n=>n.includes(c.name)&&n.includes('session'))){
-        const r=await dbInsertReminder({note:`📅 ${c.name} — session ${c.next_session===todayStr?'TODAY':'tomorrow'}${c.follow_up?' · '+c.follow_up:''}`,date:c.next_session,time:'08:30',type:'📋 Follow-up',done:false});
+
+      // ── 4. Next session today or tomorrow ──
+      if(c.next_session&&(c.next_session===todayStr||c.next_session===in1Day)&&!existingNotes.some(n=>n.includes(cName)&&n.includes('session'))){
+        const r=await dbInsertReminder({note:`📅 ${cName} — session ${c.next_session===todayStr?'TODAY':'tomorrow'}${c.follow_up?' · '+c.follow_up:''}`,date:c.next_session,time:'08:30',type:'📋 Follow-up',done:false});
         remindersCache.push(r);added++;
       }
-      // 5. Send diet plan reminder (if plan is active and no diet reminder in last 7 days)
-      if(dl>=0&&dl<=30&&c.next_session&&!existingNotes.some(n=>n.includes(c.name)&&n.includes('diet'))){
-        const r=await dbInsertReminder({note:`🥗 ${c.name} — send updated diet plan before next session`,date:in2Days,time:'10:30',type:'📋 Follow-up',done:false});
+
+      // ── 5. Weekly call — for all active clients (every 7 days) ──
+      if(dl>=0&&!existingNotes.some(n=>n.includes(cName)&&n.includes('weekly call'))){
+        // Schedule next weekly call for 7 days from now (or today if no recent call reminder)
+        const r=await dbInsertReminder({note:`📞 ${cName} — weekly check-in call / WhatsApp follow-up`,date:in7Days,time:'11:00',type:'📞 Call',done:false});
+        remindersCache.push(r);added++;
+      }
+
+      // ── 6. Diet plan refresh — every 30 days ──
+      if(dl>=0){
+        // Check if a diet reminder for this client exists in pending
+        const hasDietReminder=existingNotes.some(n=>n.includes(cName)&&n.includes('diet plan'));
+        if(!hasDietReminder){
+          // Calculate days since plan start to decide if 30-day interval passed
+          const daysSinceStart=c.start_date?Math.floor((today-new Date(c.start_date))/(864e5)):0;
+          const daysInCycle=daysSinceStart%30; // 0-29 days into current 30-day cycle
+          const daysUntilDietRefresh=30-daysInCycle; // days until next 30-day mark
+          const dietDate=new Date(Date.now()+daysUntilDietRefresh*864e5).toISOString().split('T')[0];
+          const r=await dbInsertReminder({note:`🥗 ${cName} — send updated diet plan (30-day refresh due)`,date:dietDate,time:'10:00',type:'📋 Follow-up',done:false});
+          remindersCache.push(r);added++;
+        }
+      }
+
+      // ── 7. Diet plan before next session ──
+      if(dl>=0&&c.next_session&&!existingNotes.some(n=>n.includes(cName)&&n.includes('before next session'))){
+        const r=await dbInsertReminder({note:`🥗 ${cName} — update diet plan before next session`,date:in2Days,time:'10:30',type:'📋 Follow-up',done:false});
         remindersCache.push(r);added++;
       }
     }
@@ -1165,10 +1296,11 @@ async function launchClient(c){
   document.getElementById('user-role-display').textContent=c.goal||'Member';document.getElementById('user-avatar').textContent=c.name.charAt(0);
   const tr=document.getElementById('topbar-role');if(tr)tr.textContent='Client Portal';
   const ta=document.getElementById('topbar-avatar');if(ta)ta.textContent=c.name.charAt(0);
+  const tlb=document.getElementById('topbar-logout-btn');if(tlb)tlb.style.display='block';
   const history=await dbGetWeightHistory(c.id);let pd=await dbGetPortal(c.id);
   if(!pd){pd=emptyPortal();pd.habits=[{name:'💧 Water (8 glasses)',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'},{name:'🚶 Walk 30 mins',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'},{name:'😴 Sleep 7-8 hrs',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'},{name:'🥗 Eat veggies',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'},{name:'🚫 No junk food',days:[0,0,0,0,0,0,0],freq:'daily',source:'admin'}];}
   renderNav([{id:'cp-home',icon:'🏠',label:'Dashboard'},{id:'cp-profile',icon:'👤',label:'My Profile'},{id:'cp-tracking',icon:'📈',label:'Tracking'},{id:'cp-meals',icon:'🍽️',label:'Meals'},{id:'cp-reports',icon:'📄',label:'Reports'},{id:'cp-habits',icon:'✅',label:'Habits'},{id:'cp-gut',icon:'🫁',label:'Gut Health'},{id:'cp-diet',icon:'🥗',label:'Diet Tracker'}],'cp-home');
-  const mbn=document.getElementById('mobile-bottom-nav');if(mbn){mbn.style.display='block';document.getElementById('mobile-nav-items').innerHTML=[{id:'cp-home',icon:'🏠',label:'Home'},{id:'cp-tracking',icon:'📈',label:'Track'},{id:'cp-meals',icon:'🍽️',label:'Meals'},{id:'cp-habits',icon:'✅',label:'Habits'},{id:'cp-profile',icon:'👤',label:'Profile'},{id:'cp-diet',icon:'🥗',label:'Diet'}].map(i=>`<button class="mobile-nav-item" data-id="${i.id}" onclick="navTo('${i.id}')"><span class="mn-icon">${i.icon}</span>${i.label}</button>`).join('');}
+  const mbn=document.getElementById('mobile-bottom-nav');if(mbn){mbn.style.display='block';document.getElementById('mobile-nav-items').innerHTML=[{id:'cp-home',icon:'🏠',label:'Home'},{id:'cp-tracking',icon:'📈',label:'Track'},{id:'cp-meals',icon:'🍽️',label:'Meals'},{id:'cp-habits',icon:'✅',label:'Habits'},{id:'cp-profile',icon:'👤',label:'Profile'},{id:'cp-diet',icon:'🥗',label:'Diet'}].map(i=>`<button class="mobile-nav-item" data-id="${i.id}" onclick="navTo('${i.id}')"><span class="mn-icon">${i.icon}</span>${i.label}</button>`).join('')+`<button class="mobile-nav-item mobile-logout-btn" onclick="logout()" style="color:rgba(231,76,60,.8)"><span class="mn-icon">🚪</span>Logout</button>`;}
   renderClientPages(c,history,pd);hideLoading();
 }
 
@@ -1183,8 +1315,9 @@ function renderClientPages(c,history,pd){
     <div class="metric-cards">
       <div class="metric-card"><div class="m-icon">⚖️</div><div class="m-val">${c.weight||'-'} kg</div><div class="m-label">Current Weight</div></div>
       <div class="metric-card"><div class="m-icon">📏</div><div style="margin-top:4px;font-size:13px">${bmiBadge(bmi)}</div><div class="m-label">BMI</div></div>
-      <div class="metric-card"><div class="m-icon">🎯</div><div class="m-val">${parseFloat(diff)>0?'+'+diff:diff} kg</div><div class="m-label">Change Since Start</div></div>
+      <div class="metric-card"><div class="m-icon">🎯</div><div class="m-val" style="color:${parseFloat(diff)<0?'var(--green)':parseFloat(diff)>0?'var(--red)':'var(--dark)'}">${parseFloat(diff)>0?'+'+diff:diff} kg</div><div class="m-label">Change Since Start</div></div>
     </div>
+    ${history.length>=2?`<div class="card" style="margin-bottom:18px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-size:13px;font-weight:700">📈 Weight Trend</div><div style="font-size:11px;color:var(--muted)">${history.length} entries</div></div><div style="position:relative;height:130px"><canvas id="home-weight-chart"></canvas></div></div>`:''}
     <div class="two-col">
       <div class="card"><div class="section-header"><h3>📈 Recent Weight</h3></div>${history.slice(-5).map(h=>`<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px"><span style="color:var(--muted)">${h.date}</span><strong>${h.weight} kg</strong><span style="color:var(--muted);font-size:11px">${h.note||''}</span></div>`).join('')||'<p style="color:var(--muted);font-size:13px">Log your weight below!</p>'}
         <div style="margin-top:13px"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:7px;text-transform:uppercase">Log Today</div><div style="display:flex;gap:8px"><input id="cw-input" type="number" placeholder="${c.weight||'kg'}" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px"><button class="btn btn-primary btn-sm" onclick="clientLogWeight('${c.id}')">Log</button></div></div>
@@ -1192,15 +1325,16 @@ function renderClientPages(c,history,pd){
       <div class="card"><div class="section-header"><h3>🎯 My Goal</h3></div>
         <div style="font-size:14px;font-weight:600;margin-bottom:10px">${c.goal||'-'}</div>
         <div style="background:var(--green-light);border-radius:10px;padding:12px;margin-bottom:10px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:3px">Nutritionist's Message</div><div style="font-size:13px">${c.public_note||"Stay consistent — every small step counts. You're doing great! 💪🌿"}</div></div>
-        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:7px">📏 Update Height</div><div style="display:flex;align-items:center;gap:8px"><input id="client-height-input" type="number" placeholder="${c.height||'cm'}" value="${c.height||''}" style="width:75px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px"/><span style="font-size:12px;color:var(--muted)">cm</span><button class="btn btn-secondary btn-sm" onclick="clientUpdateHeight('${c.id}')">Save</button>${c.height?`<span style="font-size:11px;color:var(--green);font-weight:600">✓ ${c.height}cm</span>`:''}</div></div>
+        ${!c.height?`<div style="background:#fff8f0;border:1px solid #fde8b8;border-radius:10px;padding:12px"><div style="font-size:11px;color:#856404;font-weight:700;margin-bottom:7px">📏 Height not set — go to My Profile to add it</div><button class="btn btn-secondary btn-sm" onclick="navTo('cp-profile')">→ My Profile</button></div>`:`<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:11px;font-size:13px;color:var(--muted)">📏 Height: <strong style="color:var(--dark)">${c.height} cm</strong> · <span style="color:var(--green);cursor:pointer" onclick="navTo('cp-profile')">Update in Profile →</span></div>`}
       </div>
     </div>
   </div>
 
   <div id="page-cp-tracking" class="page">
     <div class="page-header"><h1>Tracking 📈</h1><p>Log your daily stats</p></div>
+    ${history.length>=2?`<div class="card" style="margin-bottom:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-size:13px;font-weight:700">📉 Progress Chart</div><div style="font-size:11px;color:${parseFloat(diff)<0?'var(--green)':parseFloat(diff)>0?'var(--red)':'var(--muted)'}">Start: ${history[0].weight}kg → Now: ${c.weight}kg (${parseFloat(diff)>0?'+':''}${diff}kg)</div></div><div style="position:relative;height:160px"><canvas id="tracking-weight-chart"></canvas></div></div>`:''}
     <div class="card"><div style="font-size:13px;font-weight:700;margin-bottom:13px">📊 Log Today</div>
-      <div class="form-row three"><div class="field"><label>Weight (kg)</label><input id="t-weight" type="number" placeholder="${c.weight||''}"/></div><div class="field"><label>Waist (cm)</label><input id="t-waist" type="number" placeholder="Optional"/></div><div class="field"><label>Date</label><input id="t-date" type="date" value="${new Date().toISOString().split('T')[0]}"/></div></div>
+      <div class="form-row three"><div class="field"><label>Weight (kg)</label><input id="t-weight" type="number" min="20" max="300" step="0.1" placeholder="${c.weight||''}"/></div><div class="field"><label>Waist (cm)</label><input id="t-waist" type="number" placeholder="Optional"/></div><div class="field"><label>Date</label><input id="t-date" type="date" value="${new Date().toISOString().split('T')[0]}"/></div></div>
       <div class="form-row full"><div class="field"><label>How you feel today</label><textarea id="t-notes" placeholder="Energy, mood, any symptoms..."></textarea></div></div>
       <div class="form-actions"><button class="btn btn-primary" onclick="clientSaveTracking('${c.id}','${c.height}')">💾 Save Entry</button></div>
     </div>
@@ -1215,8 +1349,15 @@ function renderClientPages(c,history,pd){
   <div id="page-cp-meals" class="page">
     <div class="page-header"><h1>Meal Photos 🍽️</h1><p>Full history — every photo with date stamp</p></div>
     <div class="card" style="margin-bottom:16px">
-      <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px">📅 Today's Meals</div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:15px">Tap a slot to add a new photo. Every upload is saved with its date and time.</p>
+      <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px">📅 Log Meal Photo</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:13px">Select the date, pick a slot, tap to upload. Works for today or any past day.</p>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:15px;flex-wrap:wrap">
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">📅 Photo Date</label>
+          <input type="date" id="meal-log-date" value="${new Date().toISOString().split('T')[0]}" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;color:var(--text)"/>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:18px">← Set date first, then tap a slot below</div>
+      </div>
       <div class="meal-grid">${['Breakfast','Lunch','Dinner','Snack 1','Snack 2','Snack 3'].map(slot=>{
         const key=slot.toLowerCase().replace(' ','');
         const hist=pd.meal_history&&pd.meal_history[key]?pd.meal_history[key]:[];
@@ -1226,7 +1367,7 @@ function renderClientPages(c,history,pd){
         const dt=latest?latest.date:(legacyRaw&&typeof legacyRaw==='object'?legacyRaw.date:'');
         const count=hist.length+(legacySrc&&!latest?1:0);
         return`<div class="meal-slot" onclick="addMealPhoto('${c.id}','${key}')">
-          ${src?`<img src="${src}"/><div class="view-overlay">📷 Add New<br><span style="font-size:9px">${count} photo${count!==1?'s':''}</span></div>${dt?`<span class="meal-date-badge">${dt}</span>`:''}`:
+          ${src?`<img src="${src}"/><div class="view-overlay">📷 Add<br><span style="font-size:9px">${count} photo${count!==1?'s':''}</span></div>${dt?`<span class="meal-date-badge">${dt}</span>`:''}`:
           '<div style="font-size:26px">📷</div>'}
           <div class="slot-label">${slot}${count>0?` <span style="background:var(--green);color:white;border-radius:9px;padding:1px 5px;font-size:8px">${count}</span>`:''}</div>
         </div>`;
@@ -1245,9 +1386,9 @@ function renderClientPages(c,history,pd){
         return`<div style="margin-bottom:18px">
           <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">${slot} <span style="background:var(--green-light);color:var(--green);border-radius:8px;padding:1px 7px;font-size:10px">${hist.length} photo${hist.length!==1?'s':''}</span></div>
           <div style="display:flex;gap:9px;overflow-x:auto;padding-bottom:4px">${hist.slice().reverse().map(h=>`
-            <div style="flex-shrink:0;width:110px;cursor:pointer" onclick="openLightbox('${h.src}','${slot} — ${h.date||''}')">
+            <div style="flex-shrink:0;width:110px;cursor:pointer" onclick="openLightbox('${h.src}','${slot} — ${h.date||''} ${h.time||''}')">
               <img src="${h.src}" style="width:110px;height:80px;object-fit:cover;border-radius:9px;border:1.5px solid var(--border);display:block"/>
-              <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">${h.date||'—'}</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">${h.date||'—'}${h.time?' '+h.time:''}</div>
             </div>`).join('')}</div>
         </div>`;
       }).join('')||'<p style="color:var(--muted);font-size:13px">No meal photos yet. Start adding photos above!</p>'}
@@ -1265,7 +1406,7 @@ function renderClientPages(c,history,pd){
           <span class="badge badge-active" style="margin-top:5px;display:inline-block">${daysLeft} days remaining</span>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" class="profile-stats-grid">
         <div style="background:var(--green-light);border-radius:12px;padding:14px">
           <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">📋 Personal Details</div>
           <div style="font-size:13px;line-height:2.1">
@@ -1297,7 +1438,7 @@ function renderClientPages(c,history,pd){
     </div>`:''}
     <div class="card" style="margin-bottom:18px">
       <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:14px">📅 Plan Details</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center" class="profile-plan-grid">
         <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Start Date</div><div style="font-size:14px;font-weight:700">${formatDate(c.start_date)}</div></div>
         <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">End Date</div><div style="font-size:14px;font-weight:700">${formatDate(c.end_date)}</div></div>
         <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Days Left</div><div style="font-family:'Playfair Display',serif;font-size:22px;color:${daysLeft<=7?'var(--red)':daysLeft<=14?'var(--amber)':'var(--green)'}">${daysLeft}</div></div>
@@ -1320,10 +1461,11 @@ function renderClientPages(c,history,pd){
 
   <div id="page-cp-habits" class="page">
     <div class="page-header"><h1>Habits ✅</h1><p>Prescribed &amp; personal — all in one place</p></div>
-    <div class="card"><div style="font-size:12px;color:var(--muted);margin-bottom:13px">Tap a day to mark done (M→S). Add your own habits below.</div>
+    ${(()=>{const total=allHabits.length*7;const done=allHabits.reduce((a,h)=>a+(h.days||[]).reduce((b,d)=>b+d,0),0);const pct=total>0?Math.round((done/total)*100):0;const streak=allHabits.length>0?allHabits.reduce((min,h)=>{let s=0;for(let i=(h.days||[]).length-1;i>=0;i--){if(h.days[i])s++;else break;}return Math.min(min,s);},(allHabits[0]?.days||[]).length):0;return`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px"><div style="background:white;border-radius:12px;padding:13px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:22px;font-weight:700;color:var(--green);font-family:'Playfair Display',serif">${pct}%</div><div style="font-size:11px;color:var(--muted);margin-top:2px">This Week</div></div><div style="background:white;border-radius:12px;padding:13px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:22px;font-weight:700;color:var(--amber);font-family:'Playfair Display',serif">${streak}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Day Streak 🔥</div></div><div style="background:white;border-radius:12px;padding:13px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:22px;font-weight:700;color:var(--dark);font-family:'Playfair Display',serif">${allHabits.length}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Total Habits</div></div></div>`;})()}
+    <div class="card"><div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px"><span>Weekly Completion</span><span>${allHabits.reduce((a,h)=>a+(h.days||[]).reduce((b,d)=>b+d,0),0)} / ${allHabits.length*7}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${allHabits.length>0?Math.round((allHabits.reduce((a,h)=>a+(h.days||[]).reduce((b,d)=>b+d,0),0)/(allHabits.length*7))*100):0}%"></div></div></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:13px;margin-top:10px">Tap a day to mark done (M→S). Reset weekly on Monday.</div>
       ${allHabits.length===0?'<p style="color:var(--muted);font-size:13px;margin-bottom:13px">No habits yet — your nutritionist will add some, or create your own!</p>':allHabits.map((h,hi)=>`<div class="habit-row"><div style="font-size:13px;font-weight:500;flex:1">${h.name}<span class="${h.source==='client'?'habit-source-self':'habit-source-admin'}">${h.source==='client'?'Self':'Prescribed'}</span>${h.freq?`<span class="goal-badge goal-${h.freq}">${h.freq}</span>`:''}</div><div style="display:flex;align-items:center;gap:6px"><div class="habit-toggle">${['M','T','W','T','F','S','S'].map((d,di)=>`<div class="habit-day${(h.days||[])[di]?' done':''}" onclick="toggleHabit('${c.id}',${hi},${di})">${d}</div>`).join('')}</div>${h.source==='client'?`<button class="btn btn-danger btn-sm" onclick="deleteHabit('${c.id}',${hi})" style="padding:3px 7px;font-size:11px">✕</button>`:''}</div></div>`).join('')}
       <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:13px"><div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:8px">➕ Add Your Own Habit</div><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="custom-habit-input" type="text" placeholder="e.g. 🧘 Meditate 10 mins" style="flex:1;min-width:150px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px"/><button class="btn btn-secondary" onclick="addCustomHabit('${c.id}')">➕ Add</button></div></div>
-      <div style="margin-top:11px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">Weekly score: ${allHabits.reduce((a,h)=>a+(h.days||[]).reduce((b,d)=>b+d,0),0)} / ${allHabits.length*7} habits completed</div>
     </div>
   </div>
 
@@ -1348,7 +1490,15 @@ function renderClientPages(c,history,pd){
     </div>
     <div class="card" style="margin-top:16px"><div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:12px">📚 Previous Weeks</div><div id="diet-history-list"></div></div>
   </div>`;
-  currentClientObj=c;currentDietClientId=c.id;window._currentPd=pd;
+  currentClientObj=c;currentDietClientId=c.id;window._currentPd=pd;window._clientHistory=history;
+  // Draw home weight chart if data available
+  if(history.length>=2){
+    setTimeout(()=>{
+      const ctx=document.getElementById('home-weight-chart');if(!ctx)return;
+      if(window._homeChart)window._homeChart.destroy();
+      window._homeChart=new Chart(ctx,{type:'line',data:{labels:history.map(h=>h.date),datasets:[{label:'kg',data:history.map(h=>h.weight),borderColor:'#1a7a4a',backgroundColor:'rgba(26,122,74,.1)',borderWidth:2.5,pointRadius:history.length>20?0:3,pointBackgroundColor:'#1a7a4a',tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} kg`}}},scales:{y:{grid:{color:'#f0f7f3'},ticks:{font:{family:'DM Sans',size:10}}},x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},maxTicksLimit:6}}}}});
+    },80);
+  }
 }
 
 // ═══════════════════════════════════════
@@ -1434,23 +1584,35 @@ async function handleMealPhoto(e,cid){
   showLoading('Compressing & saving photo...');
   try{
     const compressed=await compressImage(file);
+    // Use the date picker if available, else fallback to today
+    const pickerEl=document.getElementById('meal-log-date');
+    const pickedDate=pickerEl&&pickerEl.value?pickerEl.value:null;
     const now=new Date();
-    const dt=now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-    const tm=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    const entry={src:compressed,date:dt,time:tm,ts:now.toISOString()};
+    let dt,tm,ts;
+    if(pickedDate&&pickedDate!==now.toISOString().split('T')[0]){
+      // Past/custom date selected
+      const d=new Date(pickedDate);
+      dt=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+      tm='';ts=pickedDate+'T00:00:00.000Z';
+    }else{
+      dt=now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+      tm=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+      ts=now.toISOString();
+    }
+    const entry={src:compressed,date:dt,time:tm,ts};
     let pd=await dbGetPortal(cid)||emptyPortal();
-    // Keep legacy meals object for backward compat
     pd.meals=pd.meals||{};pd.meals[pendingMealKey.key]={src:compressed,date:dt};
-    // Append to history array
     pd.meal_history=pd.meal_history||{};
     pd.meal_history[pendingMealKey.key]=pd.meal_history[pendingMealKey.key]||[];
     pd.meal_history[pendingMealKey.key].push(entry);
+    // Keep sorted by ts
+    pd.meal_history[pendingMealKey.key].sort((a,b)=>(a.ts||'').localeCompare(b.ts||''));
     await dbSavePortal(cid,pd);
     window._currentPd=pd;
     const history=await dbGetWeightHistory(cid);
     renderClientPages(currentClientObj,history,pd);
     navTo('cp-meals');
-    showToast('✅ Meal photo saved — '+dt+' '+tm);
+    showToast('✅ Meal photo saved — '+dt+(tm?' '+tm:''));
   }catch(err){console.error(err);showToast('❌ Error saving photo — try a smaller image');}
   finally{hideLoading();pendingMealKey=null;}
 }
