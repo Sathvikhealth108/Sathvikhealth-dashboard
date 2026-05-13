@@ -504,6 +504,36 @@ async function dbGetPortal(cid){const{data}=await db.from('client_portal').selec
 async function dbSavePortal(cid,pd){const{error}=await db.from('client_portal').upsert({client_id:cid,...pd},{onConflict:'client_id'});if(error)throw error;}
 async function dbGetPaymentHistory(){const{data,error}=await db.from('payment_history').select('*,clients(name)').order('paid_date',{ascending:false});return error?[]:(data||[]);}
 async function dbInsertPayment(p){const{data,error}=await db.from('payment_history').insert([p]).select();if(error)throw error;return data[0];}
+
+// ─── MEAL PHOTOS (Supabase Storage) ───
+const MEAL_BUCKET='meal-photos';
+async function dbInsertMealPhoto(record){
+  // record: {client_id, slot, photo_date, time_str, storage_path, public_url}
+  const{data,error}=await db.from('meal_photos').insert([record]).select();
+  if(error)throw error;return data[0];
+}
+async function dbGetMealPhotos(cid){
+  const{data,error}=await db.from('meal_photos').select('*').eq('client_id',cid).order('photo_date',{ascending:true}).order('created_at',{ascending:true});
+  return error?[]:(data||[]);
+}
+async function dbDeleteMealPhoto(id,storagePath){
+  if(storagePath){await db.storage.from(MEAL_BUCKET).remove([storagePath]);}
+  await db.from('meal_photos').delete().eq('id',id);
+}
+async function uploadMealToStorage(file,cid,slot,dateStr){
+  // Compress first
+  const compressed=await compressImage(file,900,0.80);
+  // Convert base64 to blob
+  const res=await fetch(compressed);const blob=await res.blob();
+  const ext='jpg';
+  const ts=Date.now();
+  const path=`${cid}/${slot}/${dateStr}_${ts}.${ext}`;
+  const{data,error}=await db.storage.from(MEAL_BUCKET).upload(path,blob,{contentType:'image/jpeg',upsert:false});
+  if(error)throw error;
+  const{data:urlData}=db.storage.from(MEAL_BUCKET).getPublicUrl(path);
+  return{path,url:urlData.publicUrl};
+}
+
 function emptyPortal(){return{habits:[],gut:{bloating:null,digestion:null,energy:null,notes:''},gut_history:[],meals:{},meal_history:{},reports:[],body_comp:[],diet_log:{}};}
 
 // ═══════════════════════════════════════
